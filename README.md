@@ -1,2 +1,2 @@
 # Slots
-Slot booking Application
+Slot booking Application API
