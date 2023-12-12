@@ -24,3 +24,9 @@ Main Features:
 --> Mail notifications.
 --> Neat code structure and maintainable.
 --> Open Source.
+
+Steps:
+
+Create a blueprint flask structure with all the colloborator names.
+Integrate them all with a common main.py where all the blueprint routes will be used.
+
