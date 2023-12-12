@@ -15,3 +15,12 @@ A human logs into the application(Can be a normal user or an admin).
    f) Delete the resource.
 2) If a user joins and has access to many resources:
    a) Select a specific resources.       
+   b) Select the slot for the resource as specified by the admin of that resource.
+
+
+Main Features:
+
+--> Need to be generic such that it can be used for any slot booking purposes. (where the users need to assign a resource to someone)
+--> Mail notifications.
+--> Neat code structure and maintainable.
+--> Open Source.
