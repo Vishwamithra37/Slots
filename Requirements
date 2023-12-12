@@ -12,7 +12,7 @@ A human login's into the application(Can be a normal user or an admin).
    c) give the dates - All year, everyday, every week etc etc. And division of slots. (He may also want to limit the time the slots are open. Make it as flexible as possible). And number of people who an book the slot. And option for metadata (which may contain specific information such as location, numbers, ids etc).
    d) Assign users (Either by bulk or by groups) to the resource.
    e) Unassign users from the resource.
-   f) Delete the resource.
+   f) Delete the resource (Be careful to not make zombie data in the database).
 2) If a user joins and has access to many resources:
    a) Select a specific resources.       
    b) Select the slot for the resource as specified by the admin of that resource.
