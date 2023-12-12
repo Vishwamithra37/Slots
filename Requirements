@@ -30,3 +30,5 @@ Steps:
 Create a blueprint flask structure with all the colloborator names.
 Integrate them all with a common main.py where all the blueprint routes will be used.
 
+***Use branches to make sure your commits aren't overwritten or synchronization messes up the code.***
+
