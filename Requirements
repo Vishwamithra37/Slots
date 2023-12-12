@@ -5,7 +5,7 @@ The Type of resources and time width of the resource.
 
 Flow of the Application:
 
-A human logs into the application(Can be a normal user or an admin). 
+A human login's into the application(Can be a normal user or an admin). 
 1) If admin he needs to be able to:
    a) add resource type.
    b) Give the details of the resource type. (Description) 
