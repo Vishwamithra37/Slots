@@ -2,3 +2,16 @@ Overview:
 
 The Application is to be a generalized slot booking application such that the admin can setup
 The Type of resources and time width of the resource. 
+
+Flow of the Application:
+
+A human logs into the application(Can be a normal user or an admin). 
+1) If admin he needs to be able to:
+   a) add resource type.
+   b) Give the details of the resource type. (Description) 
+   c) give the dates - All year, everyday, every week etc etc. And division of slots. (He may also want to limit the time the slots are open. Make it as flexible as possible). And number of people who an book the slot. And option for metadata (which may contain specific information such as location, numbers, ids etc).
+   d) Assign users (Either by bulk or by groups) to the resource.
+   e) Unassign users from the resource.
+   f) Delete the resource.
+2) If a user joins and has access to many resources:
+   a) Select a specific resources.       
