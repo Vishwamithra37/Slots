@@ -2,3 +2,33 @@ Overview:
 
 The Application is to be a generalized slot booking application such that the admin can setup
 The Type of resources and time width of the resource. 
+
+Flow of the Application:
+
+A human login's into the application(Can be a normal user or an admin). 
+1) If admin he needs to be able to:
+   a) add resource type.
+   b) Give the details of the resource type. (Description) 
+   c) give the dates - All year, everyday, every week etc etc. And division of slots. (He may also want to limit the time the slots are open. Make it as flexible as possible). And number of people who an book the slot. And option for metadata (which may contain specific information such as location, numbers, ids etc).
+   d) Assign users (Either by bulk or by groups) to the resource.
+   e) Unassign users from the resource.
+   f) Delete the resource (Be careful to not make zombie data in the database).
+2) If a user joins and has access to many resources:
+   a) Select a specific resources.       
+   b) Select the slot for the resource as specified by the admin of that resource.
+
+
+Main Features:
+
+--> Need to be generic such that it can be used for any slot booking purposes. (where the users need to assign a resource to someone)
+--> Mail notifications.
+--> Neat code structure and maintainable.
+--> Open Source.
+
+Steps:
+
+Create a blueprint flask structure with all the colloborator names.
+Integrate them all with a common main.py where all the blueprint routes will be used.
+
+***Use branches to make sure your commits aren't overwritten or synchronization messes up the code.***
+
