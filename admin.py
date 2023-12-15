@@ -2,9 +2,11 @@ from flask import Flask,Blueprint,jsonify
 from pymongo import MongoClient
 from admin_functions import Admin_Finder
 
+app = Flask(__name__)
+
 admin_bp = Blueprint('admin', __name__)
 client = MongoClient('mongodb://localhost:27017/')
-db = client['movie_ticket_booking']
+db = client['Slotzz']
 dac =db["Account_holders"]
 
 
@@ -45,3 +47,7 @@ def admin_login():
 @admin_bp.route('/admin_logout', methods=['POST'])
 def admin_logout():
     pass
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
