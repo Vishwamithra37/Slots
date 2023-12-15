@@ -58,7 +58,7 @@ def user_login():
 
     user_details=User_Finder.emailfinder(email)
     if user_details:
-             welcome_message = f"Welcome to the Slotzz!\n""\nHi + user_data.get("fisrtname")\n" + "! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
+             welcome_message = "Welcome to the Slotzz!\n" + users_data.get("firstname") +"! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
              return welcome_message
     return "Invalid credentials"
 
@@ -77,7 +77,7 @@ def book_slot():
 
 def send_welcome_email(username, email):
     msg = Message('Welcome to Slot Booking App', sender='your_email@example.com', recipients=[email])
-    msg.body = f'Thank you, {username}, for registering with Slot Booking App! Enjoy your slot booking experience.'
+    msg.body = f'Thank you, {firstname}, for registering with Slot Booking App! Enjoy your slot booking experience.'
     mail.send(msg)
 
 if __name__ == '__main__':
