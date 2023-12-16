@@ -1,29 +1,28 @@
-from flask import Flask,Blueprint, jsonify, request,session,flash,url_for
+from flask import Flask,current_app,Blueprint, jsonify, request,session,flash,url_for
 from flask_mail import Mail, Message
-from flask_pymongo import PyMongo
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 import os
 from user_functions import User_Finder
+from bson import ObjectId
 
-app = Flask(__name__)
-secret_key = os.urandom(24)
-app.secret_key = secret_key
-
+#app = Flask(__name__)
+#secret_key = os.urandom(24)
+#app.secret_key = secret_key
 
 users_bp = Blueprint('users', __name__)
 client = MongoClient('mongodb://localhost:27017/')
 db = client['Slotzz']
 dac =db["Account_holders"]
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/slotzzz'
-mongo = PyMongo(app)
+#app.config['MONGO_URI'] = 'mongodb://localhost:27017/slotzzz'
+#mongo = PyMongo(app)
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+"""app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'navyasri.uv@gmail.com'
 app.config['MAIL_PASSWORD'] = 'navya@1234'
 
-mail = Mail(app)
+mail = Mail(app)"""
 
 @users_bp.route('/user_register', methods=['POST'])
 def user_register():
@@ -58,17 +57,56 @@ def user_login():
 
     user_details=User_Finder.emailfinder(email)
     if user_details:
-             welcome_message = "Welcome to the Slotzz!\n" + users_data.get("firstname") +"! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
+             
+             welcome_message = "Welcome to the Slotzz!\n" + user_details["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
              return welcome_message
     return "Invalid credentials"
 
 
 @users_bp.route('/user_logout', methods=['POST'])
 def user_logout():
-    session.pop('user', None)
+    session.pop('users', None)
     return 'You have been logged out.'
 
-@app.route('/book_slot', methods=['POST'])
+
+@users_bp.route('/user_profile_edit', methods=['PUT'])
+def edit_user_profile():
+    users_data = request.get_json()
+    email = users_data["email"]
+    new_email = users_data["email"]
+    new_contact = users_data["contact"]
+
+    update_operation = UpdateOne({'email': email},{'$set': {'email': new_email, 'contact': new_contact}})
+    result = dac.update_one({'email': email},{'$set': {'email': new_email, 'contact': new_contact}})
+    print(result)
+    user = User_Finder.emailfinder(email)
+    if user:
+        user["email"] = new_email
+        user['contact'] = new_contact
+        return "User profile updated successfully"
+    else:
+        return "User not found"
+    
+@users_bp.route('/user_profile_view/<email>', methods=['GET'])
+def view_profile(email):
+    try:
+        users_data = request.get_json()
+        email = users_data['email']
+        user_profile = User_Finder.emailfinder(email)
+        print(user_profile)
+
+        user_profile['_id'] = str(user_profile['_id'])
+
+        if user_profile is not None:
+            return jsonify(user_profile)
+        else:
+            return jsonify({"message": "User profile not found"})
+    except Exception as e:
+        current_app.logger.error(f"An error occurred while retrieving user profile: {e}")
+        return jsonify({"message": "An error occurred while retrieving user profile"})
+
+
+@users_bp.route('/book_slot', methods=['POST'])
 def book_slot():
     data = request.get_json()
     slot_id = data.get('slot_id')
