@@ -104,6 +104,12 @@ def view_profile(email):
     except Exception as e:
         current_app.logger.error(f"An error occurred while retrieving user profile: {e}")
         return jsonify({"message": "An error occurred while retrieving user profile"})
+    
+@users_bp.route('/available_slots', methods=['GET'])
+def get_available_slots():
+    available_slots = list(slots_collection.find({"status": "available"}))
+    return jsonify({"available_slots": available_slots}), 200
+
 
 
 @users_bp.route('/book_slot', methods=['POST'])
@@ -119,4 +125,4 @@ def send_welcome_email(username, email):
     mail.send(msg)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+   app.run(debug=True)
