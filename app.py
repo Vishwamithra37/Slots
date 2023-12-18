@@ -2,7 +2,7 @@ from flask import  Flask
 from admin import admin_page
 app = Flask(__name__)
 
-app.register_Blueprint(admin_page,url_prefix="admin")
+app.register_blueprint(admin_page)
 
 @app.route('/')
 def hello():

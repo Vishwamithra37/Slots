@@ -1,10 +1,11 @@
 from collections import UserDict
-from flask import Blueprint, Flask,redirect, request, url_for
+from flask import Blueprint, Flask, jsonify,redirect, request, url_for
 from pymongo import MongoClient
-
+import flask
 from admin_fun import Admin_Finder
-#
-# from admin_fun import Admin_Finder
+from functools import wraps
+
+
 
 client = MongoClient("localhost", 27017)
 db = client["slotzz"]
@@ -12,15 +13,20 @@ dac = db["admin"]
 
 admin_page = Blueprint('admin', __name__,static_folder="admin_static",template_folder="admin_template")
 
-
-@admin_page.route('/dashboard')
-
 def login_required(func):
-    if admin_register    == False:
-        print("kindly login")
-        return
-    return func(admin_register,admin_logout)
-@login_required
+    
+    #Decorator to check if the user is logged in before allowing access to a route.
+    
+    def wrapper(*args, **kwargs):
+        if 'email' in admin_register :
+            # User is logged in, allow access to the route
+            return func(*args, **kwargs)
+        else:
+            # User is not logged in, redirect to the login page
+            return redirect(url_for('admin_register'))
+
+    return wrapper
+
 @admin_page.route('/admin_register', methods=['POST'])
 def admin_register():
     admin_data = Flask.request.get_json()
@@ -50,9 +56,22 @@ def admin_register():
              return 'Congratulations! Admin registered successfully. You can now proceed to the admin login. '
     return"Try Again"
 
-@admin_page.route('/dashboard')
-def dashboard():
-    return "welcome to slotzz "    
+@login_required
+@admin_page.route("/login")
+def admin_login():
+     if flask.request.method == 'POST':
+        dict_data = flask.request.get_json()
+        print(dict_data)
+        email = dict_data["email"]
+        print(email)
+        password = dict_data["password"]
+        user = Admin_Finder.emailfinder(email)
+        if user and user.check_password(password):
+             global admin_register
+             admin_register = user
+             return jsonify({"message": "Logged In Successfully"}), 200
+
+    
         
     
 @admin_page.route('/logout')
