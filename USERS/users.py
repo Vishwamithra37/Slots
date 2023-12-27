@@ -4,6 +4,10 @@ from pymongo import MongoClient, UpdateOne
 import os
 from user_functions import User_Finder
 from bson import ObjectId
+import random
+import string
+import bcrypt
+import jwt
 
 #app = Flask(__name__)
 #secret_key = os.urandom(24)
@@ -26,38 +30,113 @@ mail = Mail(app)"""
 
 @users_bp.route('/user_register', methods=['POST'])
 def user_register():
-    users_data = request.get_json()
-    firstname = users_data['firstname']
-    lastname = users_data['lastname']
-    email = users_data['email']
-    contact = users_data['contact']
-    password = users_data['password']
-    accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slotzz.in"]
-    if not any(email.endswith(domain) for domain in accepted_domains):
+  """This route is used for user registration
+    ---
+    tags:
+      - User Registration
+    summary: Register a new user
+    description: Register a new user with the provided route details
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstname:
+                type: string
+              lastname:
+                type: string
+              email:
+                type: string
+              contact:
+                type: string
+              password:
+                type: string
+    responses:
+      '200':
+        description: User registered successfully
+      '400':
+        description: Invalid request payload
+      '409':
+        description: User with this email already exists or invalid email domain
+      '500':
+        description: Error processing registration request"""
+
+  users_data = request.get_json()
+  firstname = users_data['firstname']
+  lastname = users_data['lastname']
+  email = users_data['email']
+  contact = users_data['contact']
+  password = users_data['password']
+  accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slotzz.in"]
+  if not any(email.endswith(domain) for domain in accepted_domains):
             return "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in"
 
 
-    if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
+  if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
             return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
 
-    existing_user = User_Finder.emailfinder(email)
-    if existing_user:
+  existing_user = User_Finder.emailfinder(email)
+  if existing_user:
         return 'User with this emailid already exists. Please use a different email or proceed to the user login page.'
-    else:
+  else:
          if User_Finder.get_user_data(users_data["firstname"],users_data["lastname"],users_data["email"],users_data["contact"],users_data["password"]):
              return 'Congratulations! User registered successfully. You can now proceed to the login. '
-    return "Try Again"
+  return "Try Again"
 
 
 @users_bp.route('/user_login', methods=['POST'])
 def user_login():
+    """ this route is used for user login
+        ---
+        tags:
+          - users
+        parameters:
+          - in: body
+            name: body
+            schema:
+              id: User
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                  description: email for user
+                name:
+                  type: string
+                  description: name for user
+                address:
+                  description: address for user
+                  schema:
+                    id: Address
+                    properties:
+                      street:
+                        type: string
+                      state:
+                        type: string
+                      country:
+                        type: string
+                      postalcode:
+                        type: string
+                groups:
+                  type: array
+                  description: list of groups
+                  items:
+                    $ref: "#/definitions/Group"
+        responses:
+          201:
+            description: User created
+        """
+   
+    #return "successful"
     users_data = request.get_json()
     email = users_data['email']
     password = users_data['password']
 
     user_details=User_Finder.emailfinder(email)
     if user_details:
-             
              welcome_message = "Welcome to the Slotzz!\n" + user_details["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
              return welcome_message
     return "Invalid credentials"
@@ -65,30 +144,212 @@ def user_login():
 
 @users_bp.route('/user_logout', methods=['POST'])
 def user_logout():
+    """swagger: '2.0'
+info:
+  title: User Logout API
+  version: 1.0.0
+paths:
+  /user_logout:
+    post:
+      summary: Log out the user
+      responses:
+        200:
+          description: User has been logged out successfully
+          schema:
+            type: string
+            example: You have been logged out."""
     session.pop('users', None)
     return 'You have been logged out.'
+
+@users_bp.route('/password-reset-request', methods=['POST'])
+def password_reset_request():
+    """swagger: '2.0'
+info:
+  title: Password Reset API
+  version: 1.0.0
+paths:
+  /password-reset-request:
+    post:
+      summary: Request password reset
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: user@example.com
+      responses:
+        200:
+          description: Password reset token has been sent to the user's email
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Password reset token has been sent to your email
+        404:
+          description: User not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: User not found
+
+  /password-reset:
+    post:
+      summary: Reset user's password
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: user@example.com
+              token:
+                type: string
+                example: reset_token
+              new_password:
+                type: string
+                example: new_password
+      responses:
+        200:
+          description: Password has been reset successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Password has been reset successfully
+        404:
+          description: Invalid token
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Invalid token"""
+    email = request.json['email']
+    user =  User_Finder.emailfinder(email)
+    if user:
+        token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+        
+        dac.update_one({'email': email}, {'$set': {'reset_token': token}})
+        return jsonify({'message': 'Password reset token has been sent to your email'})
+    else:
+        return jsonify({'error': 'User not found'})
+
+@users_bp.route('/password-reset', methods=['POST'])
+def password_reset():
+    email = request.json['email']
+    token = request.json['token']
+    new_password = request.json['new_password']
+    user = dac.find_one({'email': email, 'reset_token': token})
+    if user:
+        dac.update_one({'email': email}, {'$set': {'password': new_password}, '$unset': {'reset_token': 1}})
+        return jsonify({'message': 'Password has been reset successfully'})
+    else:
+        return jsonify({'error': 'Invalid token'})
+
 
 
 @users_bp.route('/user_profile_edit', methods=['PUT'])
 def edit_user_profile():
-    users_data = request.get_json()
-    email = users_data["email"]
-    new_email = users_data["email"]
-    new_contact = users_data["contact"]
+    """
+    Update user profile
+    ---
+    tags:
+      - users
+    description: Endpoint for updating a user's profile information
+    parameters:
+      - in: body
+        name: user_data
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              description: The user's email
+            new_email:
+              type: string
+              description: The new email to be updated
+            new_contact:
+              type: string
+              description: The new contact information
+    responses:
+      200:
+        description: User profile updated successfully
+      404:
+        description: User not found
+    """
+    user_data = request.get_json()   
+    email = user_data["email"]   
+    new_email = user_data["new_email"]   
+    new_contact = user_data["new_contact"] 
+    result = dac.update_one({'email': email}, {'$set': {'email': new_email, 'contact': new_contact}}) 
 
-    update_operation = UpdateOne({'email': email},{'$set': {'email': new_email, 'contact': new_contact}})
-    result = dac.update_one({'email': email},{'$set': {'email': new_email, 'contact': new_contact}})
-    print(result)
-    user = User_Finder.emailfinder(email)
-    if user:
-        user["email"] = new_email
-        user['contact'] = new_contact
-        return "User profile updated successfully"
+    if result.modified_count > 0: 
+        user = User_Finder.emailfinder(new_email) 
+        if user:
+            user["email"] = new_email
+            user['contact'] = new_contact
+            return "User profile updated successfully"
+        else:
+            return "User profile updated in the database, but user data retrieval failed"
     else:
-        return "User not found"
+        return "User not found"   
     
 @users_bp.route('/user_profile_view/<email>', methods=['GET'])
 def view_profile(email):
+    """
+    View user profile
+    ---
+    tags:
+        - User Profile
+      description: Returns the user profile associated with the provided email
+      parameters:
+      - in: path
+         name: email
+          required: true
+          description: User's email address
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: User profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: An error occurred while retrieving user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string"""
     try:
         users_data = request.get_json()
         email = users_data['email']
@@ -105,24 +366,15 @@ def view_profile(email):
         current_app.logger.error(f"An error occurred while retrieving user profile: {e}")
         return jsonify({"message": "An error occurred while retrieving user profile"})
     
-@users_bp.route('/available_slots', methods=['GET'])
-def get_available_slots():
-    available_slots = list(slots_collection.find({"status": "available"}))
-    return jsonify({"available_slots": available_slots}), 200
-
-
-
-@users_bp.route('/book_slot', methods=['POST'])
-def book_slot():
-    data = request.get_json()
-    slot_id = data.get('slot_id')
-    # Add logic to book the slot in the database
-    return {'message': f'Slot {slot_id} booked successfully.'}, 200
-
-def send_welcome_email(username, email):
-    msg = Message('Welcome to Slot Booking App', sender='your_email@example.com', recipients=[email])
-    msg.body = f'Thank you, {firstname}, for registering with Slot Booking App! Enjoy your slot booking experience.'
+def send_welcome_email(firstname, email):
+    users_data = request.get_json()
+    email = users_data['email']
+    user_details=User_Finder.emailfinder(email)
+    if user_details:
+    
+     msg = Message('Welcome to Slotzz', sender='your_email@example.com', recipients=[email])
+    #msg.body = "Thank you," +  user_details["firstname"]," +  "for registering with Slotzz! Enjoy your slot booking experience."
     mail.send(msg)
 
 if __name__ == '__main__':
-   app.run(debug=True)
+  app.run(debug=True)

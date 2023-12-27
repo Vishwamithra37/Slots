@@ -9,6 +9,7 @@ collection = db['slots']
 
 @routes_bp.route('/available_slots', methods=['GET'])
 def get_available_slots():
+    """THis route will list all the available slots"""
     available_slots = list(collection.find({'status': 'available'}))
     for slot in available_slots:
         slot['_id'] = str(slot['_id'])
