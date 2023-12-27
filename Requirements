@@ -30,3 +30,13 @@ Steps:
 Create a blueprint flask structure with all the colloborator names.
 Integrate them all with a common main.py where all the blueprint routes will be used.
 
+pip install flask-swagger(for testing)
+
+from flask swagern import swagger(in main)
+python docstring folder(for documentation)
+ai python docstring in vscode
+number of routes?
+documentation 
+routes assigned per person
+
+
