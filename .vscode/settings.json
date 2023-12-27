@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./SLOTS_REL_ROUTES"
+    ]
+}
