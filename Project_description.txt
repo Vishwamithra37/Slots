@@ -13,6 +13,7 @@ A human login's into the application(Can be a normal user or an admin).
    d) Assign users (Either by bulk or by groups) to the resource.
    e) Unassign users from the resource.
    f) Delete the resource (Be careful to not make zombie data in the database).
+   g) Editing everything
 2) If a user joins and has access to many resources:
    a) Select a specific resources.       
    b) Select the slot for the resource as specified by the admin of that resource.
@@ -29,4 +30,6 @@ Steps:
 
 Create a blueprint flask structure with all the colloborator names.
 Integrate them all with a common main.py where all the blueprint routes will be used.
+
+***Use branches to make sure your commits aren't overwritten or synchronization messes up the code.***
 
