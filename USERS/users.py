@@ -8,6 +8,8 @@ import random
 import string
 import bcrypt
 import jwt
+from bson.binary import Binary
+import base64
 
 #app = Flask(__name__)
 #secret_key = os.urandom(24)
@@ -77,13 +79,22 @@ def user_register():
   if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
             return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
 
-  existing_user = User_Finder.emailfinder(email)
+  #existing_user = User_Finder.emailfinder(email)
+  existing_user = dac.find_one({"email": users_data['email']})
   if existing_user:
         return 'User with this emailid already exists. Please use a different email or proceed to the user login page.'
-  else:
-         if User_Finder.get_user_data(users_data["firstname"],users_data["lastname"],users_data["email"],users_data["contact"],users_data["password"]):
-             return 'Congratulations! User registered successfully. You can now proceed to the login. '
-  return "Try Again"
+   # Hash the password
+  hashed_password = bcrypt.hashpw(users_data['password'].encode('utf-8'), bcrypt.gensalt())
+  users_data['password'] = hashed_password
+    
+    # Assign default permissions (e.g., 'view_slots' and 'book_slot')
+  users_data['permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
+
+    
+    # Store the user data in the database
+  dac.insert_one(users_data)
+  return 'Congratulations! User registered successfully. You can now proceed to the login. '
+
 
 
 @users_bp.route('/user_login', methods=['POST'])
@@ -134,12 +145,19 @@ def user_login():
     users_data = request.get_json()
     email = users_data['email']
     password = users_data['password']
+    user = dac.find_one({"email": email})
+    
 
-    user_details=User_Finder.emailfinder(email)
-    if user_details:
-             welcome_message = "Welcome to the Slotzz!\n" + user_details["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
-             return welcome_message
-    return "Invalid credentials"
+    #user_details=User_Finder.emailfinder(email)
+    if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
+        # Generate a token with user's email and permissions
+        token = jwt.encode({'email': email, 'permissions': user['permissions']}, current_app.secret_key, algorithm='HS256')
+        session['token'] = token
+        welcome_message = "Welcome to the Slotzz!\n" + user["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
+        return welcome_message
+    else:
+        return 'Invalid credentials'
+             
 
 
 @users_bp.route('/user_logout', methods=['POST'])
@@ -256,11 +274,13 @@ def password_reset():
     new_password = request.json['new_password']
     user = dac.find_one({'email': email, 'reset_token': token})
     if user:
-        dac.update_one({'email': email}, {'$set': {'password': new_password}, '$unset': {'reset_token': 1}})
+        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        # Update the user's password in the database with the hashed password
+        dac.update_one({'email': email}, {'$set': {'password': hashed_new_password}, '$unset': {'reset_token': 1}})
         return jsonify({'message': 'Password has been reset successfully'})
     else:
         return jsonify({'error': 'Invalid token'})
-
+      
 
 
 @users_bp.route('/user_profile_edit', methods=['PUT'])
@@ -350,22 +370,24 @@ def view_profile(email):
                 properties:
                   message:
                     type: string"""
-    try:
-        users_data = request.get_json()
-        email = users_data['email']
-        user_profile = User_Finder.emailfinder(email)
-        print(user_profile)
+    user_data = request.get_json() 
+    email = user_data["email"]
+    user_profile = dac.find_one({"email": email})
 
+    if user_profile:
+        # Convert ObjectId to string
         user_profile['_id'] = str(user_profile['_id'])
 
-        if user_profile is not None:
-            return jsonify(user_profile)
-        else:
-            return jsonify({"message": "User profile not found"})
-    except Exception as e:
-        current_app.logger.error(f"An error occurred while retrieving user profile: {e}")
-        return jsonify({"message": "An error occurred while retrieving user profile"})
-    
+        # Convert password from bytes to UTF-8 string
+        user_profile['password'] = user_profile['password'].decode('utf-8')
+
+        return jsonify(user_profile)
+    else:
+        current_app.logger.error("User profile not found for email: email")
+        return jsonify({"message": "User profile not found"}), 404   
+
+
+
 def send_welcome_email(firstname, email):
     users_data = request.get_json()
     email = users_data['email']
