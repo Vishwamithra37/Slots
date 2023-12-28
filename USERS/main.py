@@ -2,9 +2,10 @@ from flask import Flask,url_for, jsonify
 from flask_swagger import swagger
 from users import users_bp
 from routes import routes_bp
+import os
 
 app = Flask(__name__)
-app.secret_key="Hopethisworks"
+app.secret_key = os.urandom(24)
 
 
 app.register_blueprint(users_bp, url_prefix='/users_rel_routes')
