@@ -46,15 +46,15 @@ def user_register():
           schema:
             type: "object"
             properties:
-              firstname:
+              Fullname:
                 type: "string"
-              lastname:
+              Email:
                 type: "string"
-              email:
+              Contact_no:
                 type: "string"
-              contact:
+              Password:
                 type: "string"
-              password:
+              Confirm_password:
                 type: "string"
       responses:
         200:
@@ -72,25 +72,30 @@ def user_register():
   
 
   users_data = request.get_json()
-  fullname = users_data['fullname']
+  Fullname = users_data['Fullname']
   #lastname = users_data['lastname']
-  email = users_data['email']
-  contact = users_data['contact']
-  password = users_data['password']
+  Email = users_data['Email']
+  Contact_no = users_data['Contact_no']
+  Password = users_data['Password']
+  Confirm_password = users_data['Confirm_password']
   accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slotzz.in"]
-  if not any(email.endswith(domain) for domain in accepted_domains):
+  if not any(Email.endswith(domain) for domain in accepted_domains):
             return "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in"
 
 
-  if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
+  if len(Password) < 8 or not (any(c.isdigit() for c in Password) and any(c.isalpha() for c in Password) and any(not c.isalnum() for c in Password)):
             return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
 
-  existing_user = dac.find_one({"email": users_data['email']})
+  existing_user = dac.find_one({"Email": users_data['Email']})
+  if users_data['Password'] != users_data['Confirm_password']:
+    return "Password and confirm password didn't match. Please re-enter your password."
   if existing_user:
         return 'User with this emailid already exists. Please use a different email or proceed to the user login page.'
-  hashed_password = bcrypt.hashpw(users_data['password'].encode('utf-8'), bcrypt.gensalt())
-  users_data['password'] = hashed_password
-  users_data['permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
+  hashed_password = bcrypt.hashpw(users_data['Password'].encode('utf-8'), bcrypt.gensalt())
+  users_data['Password'] = hashed_password
+  hashed_password1 = bcrypt.hashpw(users_data['Confirm_password'].encode('utf-8'), bcrypt.gensalt())
+  users_data['Confirm_password'] = hashed_password1
+  users_data['Permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
   dac.insert_one(users_data)
   return 'Congratulations! User registered successfully. You can now proceed to the login. '
 
