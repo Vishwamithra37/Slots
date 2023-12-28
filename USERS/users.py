@@ -32,42 +32,48 @@ mail = Mail(app)"""
 
 @users_bp.route('/user_register', methods=['POST'])
 def user_register():
-  """This route is used for user registration
-    ---
-    tags:
-      - User Registration
-    summary: Register a new user
-    description: Register a new user with the provided route details
-    requestBody:
-      required: true
-      content:
-        application/json:
+  """user_register
+      ---
+      tags: 
+        - "Users"
+      
+      description: "Endpoint to register a new user with validation checks"
+      parameters:
+        - in: "body"
+          name: "user"
+          description: "User registration details"
+          required: true
           schema:
-            type: object
+            type: "object"
             properties:
               firstname:
-                type: string
+                type: "string"
               lastname:
-                type: string
+                type: "string"
               email:
-                type: string
+                type: "string"
               contact:
-                type: string
+                type: "string"
               password:
-                type: string
-    responses:
-      '200':
-        description: User registered successfully
-      '400':
-        description: Invalid request payload
-      '409':
-        description: User with this email already exists or invalid email domain
-      '500':
-        description: Error processing registration request"""
+                type: "string"
+      responses:
+        200:
+          description: "User registered successfully"
+          
+        400:
+          description: "Bad request"
+          
+        409:
+          description: "User already exists"
+          
+        422:
+          description: "Validation error"
+           """
+  
 
   users_data = request.get_json()
-  firstname = users_data['firstname']
-  lastname = users_data['lastname']
+  fullname = users_data['fullname']
+  #lastname = users_data['lastname']
   email = users_data['email']
   contact = users_data['contact']
   password = users_data['password']
@@ -79,19 +85,12 @@ def user_register():
   if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
             return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
 
-  #existing_user = User_Finder.emailfinder(email)
   existing_user = dac.find_one({"email": users_data['email']})
   if existing_user:
         return 'User with this emailid already exists. Please use a different email or proceed to the user login page.'
-   # Hash the password
   hashed_password = bcrypt.hashpw(users_data['password'].encode('utf-8'), bcrypt.gensalt())
   users_data['password'] = hashed_password
-    
-    # Assign default permissions (e.g., 'view_slots' and 'book_slot')
   users_data['permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
-
-    
-    # Store the user data in the database
   dac.insert_one(users_data)
   return 'Congratulations! User registered successfully. You can now proceed to the login. '
 
@@ -99,58 +98,13 @@ def user_register():
 
 @users_bp.route('/user_login', methods=['POST'])
 def user_login():
-    """ this route is used for user login
-        ---
-        tags:
-          - users
-        parameters:
-          - in: body
-            name: body
-            schema:
-              id: User
-              required:
-                - email
-                - name
-              properties:
-                email:
-                  type: string
-                  description: email for user
-                name:
-                  type: string
-                  description: name for user
-                address:
-                  description: address for user
-                  schema:
-                    id: Address
-                    properties:
-                      street:
-                        type: string
-                      state:
-                        type: string
-                      country:
-                        type: string
-                      postalcode:
-                        type: string
-                groups:
-                  type: array
-                  description: list of groups
-                  items:
-                    $ref: "#/definitions/Group"
-        responses:
-          201:
-            description: User created
-        """
-   
-    #return "successful"
+    
+    
     users_data = request.get_json()
     email = users_data['email']
     password = users_data['password']
     user = dac.find_one({"email": email})
-    
-
-    #user_details=User_Finder.emailfinder(email)
     if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
-        # Generate a token with user's email and permissions
         token = jwt.encode({'email': email, 'permissions': user['permissions']}, current_app.secret_key, algorithm='HS256')
         session['token'] = token
         welcome_message = "Welcome to the Slotzz!\n" + user["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
@@ -332,53 +286,13 @@ def edit_user_profile():
     
 @users_bp.route('/user_profile_view/<email>', methods=['GET'])
 def view_profile(email):
-    """
-    View user profile
-    ---
-    tags:
-        - User Profile
-      description: Returns the user profile associated with the provided email
-      parameters:
-      - in: path
-         name: email
-          required: true
-          description: User's email address
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserProfile'
-        '404':
-          description: User profile not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '500':
-          description: An error occurred while retrieving user profile
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string"""
+    
     user_data = request.get_json() 
     email = user_data["email"]
     user_profile = dac.find_one({"email": email})
 
     if user_profile:
-        # Convert ObjectId to string
         user_profile['_id'] = str(user_profile['_id'])
-
-        # Convert password from bytes to UTF-8 string
         user_profile['password'] = user_profile['password'].decode('utf-8')
 
         return jsonify(user_profile)
