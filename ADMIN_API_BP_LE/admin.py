@@ -2,7 +2,7 @@ from collections import UserDict
 from flask import Blueprint, Flask, jsonify,redirect, request, url_for
 from pymongo import MongoClient
 import flask
-from admin_fun import Admin_Finder
+from ADMIN_API_BP_LE.admin_fun import Admin_Finder
 from functools import wraps
 
 
