@@ -3,8 +3,12 @@ from flask_swagger import swagger
 from users import users_bp
 from routes import routes_bp
 import os
-
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
+
+
+
 app.secret_key = os.urandom(24)
 
 

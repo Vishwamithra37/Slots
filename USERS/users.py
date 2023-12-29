@@ -99,47 +99,7 @@ def user_register():
 
 @users_bp.route('/user_login', methods=['POST'])
 def user_login():
-    """ this route is used for user login
-        ---
-        tags:
-          - users
-        parameters:
-          - in: body
-            name: body
-            schema:
-              id: User
-              required:
-                - email
-                - name
-              properties:
-                email:
-                  type: string
-                  description: email for user
-                name:
-                  type: string
-                  description: name for user
-                address:
-                  description: address for user
-                  schema:
-                    id: Address
-                    properties:
-                      street:
-                        type: string
-                      state:
-                        type: string
-                      country:
-                        type: string
-                      postalcode:
-                        type: string
-                groups:
-                  type: array
-                  description: list of groups
-                  items:
-                    $ref: "#/definitions/Group"
-        responses:
-          201:
-            description: User created
-        """
+   
    
     #return "successful"
     users_data = request.get_json()
