@@ -1,10 +1,9 @@
-from flask import  Flask
+from flask import  Flask,jsonify
 from flask_swagger import swagger
 from ADMIN_API_BP_LE.admin import admin_page
 from USERS_API_BP_NS.users import users_bp
 import os
 
-app = Flask(__name__)
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
