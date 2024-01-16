@@ -2,7 +2,7 @@ from flask import Flask,current_app,Blueprint, jsonify,json, request,session,fla
 from flask_mail import Mail, Message
 from pymongo import MongoClient, UpdateOne
 import os
-from user_functions import User_Finder
+from .user_functions import User_Finder
 from bson import ObjectId
 from bson import json_util
 import random

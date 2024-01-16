@@ -1,81 +1,69 @@
-from collections import UserDict
-from flask import Blueprint, Flask, jsonify,redirect, request, url_for
+import datetime
+from flask import Blueprint
 from pymongo import MongoClient
-import flask
-from ADMIN_API_BP_LE.admin_fun import Admin_Finder
-from functools import wraps
+from flask import Flask, request, jsonify
+import re
 
 
-
+app = Flask(__name__)
 client = MongoClient("localhost", 27017)
-db = client["slotzz"]
-dac = db["admin"]
+db = client["Slotzz"]
+dac = db["Account_holders"]
 
 admin_page = Blueprint('admin', __name__,static_folder="admin_static",template_folder="admin_template")
 
-def login_required(func):
-    
-    #Decorator to check if the user is logged in before allowing access to a route.
-    
-    def wrapper(*args, **kwargs):
-        if 'email' in admin_register :
-            # User is logged in, allow access to the route
-            return func(*args, **kwargs)
-        else:
-            # User is not logged in, redirect to the login page
-            return redirect(url_for('admin_register'))
 
-    return wrapper
+# Input validation function for date
+def validate_date(date_str):
+    try:
+        datetime.datetime.strptime(date_str, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
 
-@admin_page.route('/admin_register', methods=['POST'])
-def admin_register():
-    admin_data = Flask.request.get_json()
-    if not admin_data:
-        return 'Data not provided'
-    firstname = admin_data['firstname']
-    lastname = admin_data['lastname']
-    email = admin_data['email']
-    contact = admin_data['contact']
-    password=admin_data["password"]
-    accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slots.in"]
-    if not any(email.endswith(domain) for domain in accepted_domains):
-            return "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slots.in"
-
-    
-    if len(firstname) > 25:
-        return 'First name should be below 25 characters'
-    
-    if len(password) < 8 or not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password) and any(not c.isalnum() for c in password)):
-            return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
-
-    existing_admin = Admin_Finder.emailfinder(email)
-    if existing_admin:
-        return 'Admin with this emailid already exists. Please use a different email or proceed to the admin login page.'
+# Input validation function for time
+def validate_time(time_str):
+    if re.match(r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$', time_str):
+        return True
     else:
-         if Admin_Finder.get_admin_data(admin_data["firstname"],admin_data["lastname"],admin_data["email"],admin_data["contact"]):
-             return 'Congratulations! Admin registered successfully. You can now proceed to the admin login. '
-    return"Try Again"
+        return False
 
-@login_required
-@admin_page.route("/login")
-def admin_login():
-     if flask.request.method == 'POST':
-        dict_data = flask.request.get_json()
-        print(dict_data)
-        email = dict_data["email"]
-        print(email)
-        password = dict_data["password"]
-        user = Admin_Finder.emailfinder(email)
-        if user and user.check_password(password):
-             global admin_register
-             admin_register = user
-             return jsonify({"message": "Logged In Successfully"}), 200
+@admin_page.route('/admin/create_slot', methods=['POST'])
+def create_slot():
+    data = request.get_json()
+    slot_name = data.get('slot_name')
+    resource = data.get('resource')
+    date_str = data.get('date')
+    time_str = data.get('time')
+    number_of_slots = data.get('number_of_slots')
 
-    
+    # Validation of date and time input
+    if not validate_date(date_str):
+        return jsonify({"error": "Invalid date format. Please use YYYY-MM-DD."}), 400
+    if not validate_time(time_str):
+        return jsonify({"error": "Invalid time format. Please use HH:MM in 24-hour format."}), 400
+
+    # Convert date and time strings to datetime object
+    date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+    time_obj = datetime.datetime.strptime(time_str, '%H:%M')
+
+    # Combine date and time into a single datetime object
+    combined_datetime = datetime.datetime.combine(date_obj.date(), time_obj.time())
+
+    # Create the slot document with date, time, and number_of_slots
+    slot_data = {
+        "slot_name": slot_name,
+        "resource": resource,
+        "datetime": combined_datetime,
+        "number_of_slots": number_of_slots,
         
-    
-@admin_page.route('/logout')
-@login_required
-def admin_logout():
-    return redirect(url_for('admin login'))
+    }
+    result = dac.insert_one(slot_data)
+    return jsonify({"message": "Slot created successfully", "slot_id": str(result.inserted_id)}), 200
+
+if __name__ =='_main__':
+    app.run(debug=True)
+
+
+
 

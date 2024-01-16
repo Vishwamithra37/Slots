@@ -1,6 +1,27 @@
 # Slots
 Slot booking Application API
 
+# Pre-requistors
+1) Database - Mongodb
+
+# Instructions 
+
+1) install venv 
+   ~~~sh
+   python -m venv project_Slotzz
+   . project_Slotzz/Scripts/activate
+   
+   ~~~
+2) requirements.txt
+   ~~~sh
+   pip install -r requirements.txt
+   
+   ~~~
+3) Running application
+    ~~~sh
+    python app.py
+    ~~~
+    
 # Instructions for Swagger
 
 # 1) Installation of swagger:
@@ -29,4 +50,6 @@ run the app.py file.
  
  3.PASTE it in ONLINE SWAGGER EDITOR (Converting json to YAML)
  
- 4.Bingo.You can see the routes and inputs that routes expecting and also the type of input.
+ 4.Bingo.You can see the routes and inputs that routes expecting and also the type of input
+ 
+
