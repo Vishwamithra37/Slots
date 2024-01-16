@@ -1,6 +1,6 @@
 from flask import  Flask
-from ADMIN_API_BP_LE.admin import admin_page
-from USERS_API_BP_NS.users import users_bp
+from ADMIN_BP_LEELA.admin import admin_page
+from USER_BP_NAVYA.users import users_bp
 
 app = Flask(__name__)
 
