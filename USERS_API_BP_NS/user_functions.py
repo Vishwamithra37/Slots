@@ -4,9 +4,9 @@ client = MongoClient('mongodb://localhost:27017')
 db = client['Slotzz']  
 dac = db['Account_holders'] 
 class User_Finder:
-    def emailfinder(emailid):
+    def emailfinder(Emailid):
          """this fn needs to find the email from database  and return true if present else false """
-         result={"email":emailid}
+         result={"Email":Emailid}
 
          finder = dac.find_one(result)
          print(finder)
