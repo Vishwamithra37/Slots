@@ -2,6 +2,7 @@ from flask import Flask,current_app,Blueprint, jsonify,json, request,session,fla
 from flask_mail import Mail, Message
 from pymongo import MongoClient, UpdateOne
 import os
+import datetime
 from .user_functions import User_Finder
 from bson import ObjectId
 from bson import json_util
@@ -105,22 +106,23 @@ def user_register():
 @users_bp.route('/user_login', methods=['POST'])
 def user_login():
     
-    
     users_data = request.get_json()
     Email = users_data['Email']
     Password = users_data['Password']
+
     user = dac.find_one({"Email": Email})
     if user and bcrypt.checkpw(Password.encode('utf-8'), user['Password']):
-        if 'Permissions' in user:  
-           token = jwt.encode({'Email': Email, 'Permissions': user['Permissions']}, current_app.secret_key, algorithm='HS256')  # Correct the algorithm parameter to 'HS256'
-           session['token'] = token
-           welcome_message = "Welcome to the Slotzz!\n" + user["Fullname"] + "! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
-           return welcome_message
-        else:
-           return 'Permissions not found for the user'
+     token = jwt.encode({'Email': Email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, current_app.config['SECRET_KEY'], algorithm='HS256')
+     user['token'] = token 
+     dac.update_one({"Email": Email}, {"$set": {"token": token}})
+
+
+     welcome_message = f"Welcome to the Slotzz, {user['Fullname']}! You are now logged in. What would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the corresponding number for your desired action."
+     return jsonify({'message': welcome_message, 'token': token})
     else:
-           return 'Invalid credentials'
-           
+     return jsonify({'message': 'Invalid username or password'}), 401
+  
+    
 
 
 @users_bp.route('/user_logout', methods=['POST'])
@@ -139,8 +141,19 @@ paths:
           schema:
             type: string
             example: You have been logged out."""
-    session.pop('users', None)
-    return 'You have been logged out.'
+    
+    token = request.headers.get('Authorization')  
+
+    if token:
+        user = dac.find_one({"token": token})
+        if user:
+            dac.update_one({"Email": user['Email']}, {"$unset": {"token": 1}})
+            return jsonify({'message': 'You have been successfully logged out'})
+        else:
+            return jsonify({'message': 'Invalid token'}), 401
+    else:
+        return jsonify({'message': 'Token is missing'}), 401
+
 
 @users_bp.route('/password-reset-request', methods=['POST'])
 def password_reset_request():
@@ -293,25 +306,21 @@ def edit_user_profile():
     else:
         return "User not found"   
     
-@users_bp.route('/user_profile_view/<email>', methods=['GET'])
-def view_profile(email):
+@users_bp.route('/user_profile_view', methods=['POST'])
+def view_profile():
     
     user_data = request.get_json() 
     Email = user_data["Email"]
-    #user_profile = dac.find_one({"Email": Email})
-    user_profile = dac.find_one({"Email": Email})  # Exclude the 'Password' field from the response
-
+    user_profile = dac.find_one({"Email": Email})  
     if  user_profile:
-        # Convert ObjectId to string if needed
         user_profile['_id'] = str(user_profile['_id'])
         user_profile['Password'] = user_profile['Password'].decode('utf-8')
-
-        #user_profile['Password'] = user_profile['Password'].decode('utf-8')
-        return json.loads(json_util.dumps(user_profile)) 
+        print(json.loads(json_util.dumps(user_profile)))
+        return json.loads(json_util.dumps(user_profile))
         return jsonify(user_profile)
     else:
-        current_app.logger.error(f"User profile not found for email: {email}")
-        return jsonify({"message": "User profile not found"}), 404 
+        #current_app.logger.error(f"User profile not found for email: {email}")
+        return jsonify({"message": "User profile not found"}), 400
       
 
 
@@ -325,5 +334,5 @@ def send_welcome_email(firstname, email):
     #msg.body = "Thank you," +  user_details["firstname"]," +  "for registering with Slotzz! Enjoy your slot booking experience."
     mail.send(msg)
 
-if __name__ == '__main__':
-  app.run(debug=True)
+#if __name__ == '__main__':
+  #app.run(debug=True)
