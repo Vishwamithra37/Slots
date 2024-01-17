@@ -306,25 +306,21 @@ def edit_user_profile():
     else:
         return "User not found"   
     
-@users_bp.route('/user_profile_view/<email>', methods=['GET'])
-def view_profile(email):
+@users_bp.route('/user_profile_view', methods=['POST'])
+def view_profile():
     
     user_data = request.get_json() 
     Email = user_data["Email"]
-    #user_profile = dac.find_one({"Email": Email})
-    user_profile = dac.find_one({"Email": Email})  # Exclude the 'Password' field from the response
-
+    user_profile = dac.find_one({"Email": Email})  
     if  user_profile:
-        # Convert ObjectId to string if needed
         user_profile['_id'] = str(user_profile['_id'])
         user_profile['Password'] = user_profile['Password'].decode('utf-8')
-
-        #user_profile['Password'] = user_profile['Password'].decode('utf-8')
-        return json.loads(json_util.dumps(user_profile)) 
+        print(json.loads(json_util.dumps(user_profile)))
+        return json.loads(json_util.dumps(user_profile))
         return jsonify(user_profile)
     else:
-        current_app.logger.error(f"User profile not found for email: {email}")
-        return jsonify({"message": "User profile not found"}), 404 
+        #current_app.logger.error(f"User profile not found for email: {email}")
+        return jsonify({"message": "User profile not found"}), 400
       
 
 
