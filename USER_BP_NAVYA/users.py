@@ -1,9 +1,10 @@
-from flask import Flask,current_app,Blueprint, jsonify, request,session,flash,url_for
+from flask import Flask,current_app,Blueprint, jsonify,json, request,session,flash,url_for
 from flask_mail import Mail, Message
 from pymongo import MongoClient, UpdateOne
 import os
 from .user_functions import User_Finder
 from bson import ObjectId
+from bson import json_util
 import random
 import string
 import bcrypt
@@ -108,6 +109,7 @@ def user_login():
     
     
     users_data = request.get_json()
+
     email = users_data['email']
     password = users_data['password']
     user = dac.find_one({"email": email})
@@ -116,9 +118,22 @@ def user_login():
         session['token'] = token
         welcome_message = "Welcome to the Slotzz!\n" + user["Fullname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
         return welcome_message
+
+    Email = users_data['Email']
+    Password = users_data['Password']
+    user = dac.find_one({"Email": Email})
+    if user and bcrypt.checkpw(Password.encode('utf-8'), user['Password']):
+        if 'Permissions' in user:  
+           token = jwt.encode({'Email': Email, 'Permissions': user['Permissions']}, current_app.secret_key, algorithm='HS256')  # Correct the algorithm parameter to 'HS256'
+           session['token'] = token
+           welcome_message = "Welcome to the Slotzz!\n" + user["Fullname"] + "! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
+           return welcome_message
+        else:
+           return 'Permissions not found for the user'
+
     else:
-        return 'Invalid credentials'
-             
+           return 'Invalid credentials'
+           
 
 
 @users_bp.route('/user_logout', methods=['POST'])
@@ -218,26 +233,26 @@ paths:
               error:
                 type: string
                 example: Invalid token"""
-    email = request.json['email']
-    user =  User_Finder.emailfinder(email)
+    Email = request.json['Email']
+    user =  User_Finder.emailfinder(Email)
     if user:
         token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
         
-        dac.update_one({'email': email}, {'$set': {'reset_token': token}})
+        dac.update_one({'Email': Email}, {'$set': {'reset_token': token}})
         return jsonify({'message': 'Password reset token has been sent to your email'})
     else:
         return jsonify({'error': 'User not found'})
 
 @users_bp.route('/password-reset', methods=['POST'])
 def password_reset():
-    email = request.json['email']
+    Email = request.json['Email']
     token = request.json['token']
     new_password = request.json['new_password']
-    user = dac.find_one({'email': email, 'reset_token': token})
+    user = dac.find_one({'Email': Email, 'reset_token': token})
     if user:
         hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
         # Update the user's password in the database with the hashed password
-        dac.update_one({'email': email}, {'$set': {'password': hashed_new_password}, '$unset': {'reset_token': 1}})
+        dac.update_one({'Email': Email}, {'$set': {'Password': hashed_new_password}, '$unset': {'reset_token': 1}})
         return jsonify({'message': 'Password has been reset successfully'})
     else:
         return jsonify({'error': 'Invalid token'})
@@ -275,16 +290,16 @@ def edit_user_profile():
         description: User not found
     """
     user_data = request.get_json()   
-    email = user_data["email"]   
+    Email = user_data["Email"]   
     new_email = user_data["new_email"]   
     new_contact = user_data["new_contact"] 
-    result = dac.update_one({'email': email}, {'$set': {'email': new_email, 'contact': new_contact}}) 
+    result = dac.update_one({'Email': Email}, {'$set': {'Email': new_email, 'Contact_no': new_contact}}) 
 
     if result.modified_count > 0: 
         user = User_Finder.emailfinder(new_email) 
         if user:
-            user["email"] = new_email
-            user['contact'] = new_contact
+            user["Email"] = new_email
+            user['Contact_no'] = new_contact
             return "User profile updated successfully"
         else:
             return "User profile updated in the database, but user data retrieval failed"
@@ -295,18 +310,22 @@ def edit_user_profile():
 def view_profile(email):
     
     user_data = request.get_json() 
-    email = user_data["email"]
-    user_profile = dac.find_one({"email": email})
+    Email = user_data["Email"]
+    #user_profile = dac.find_one({"Email": Email})
+    user_profile = dac.find_one({"Email": Email})  # Exclude the 'Password' field from the response
 
-    if user_profile:
+    if  user_profile:
+        # Convert ObjectId to string if needed
         user_profile['_id'] = str(user_profile['_id'])
-        user_profile['password'] = user_profile['password'].decode('utf-8')
+        user_profile['Password'] = user_profile['Password'].decode('utf-8')
 
+        #user_profile['Password'] = user_profile['Password'].decode('utf-8')
+        return json.loads(json_util.dumps(user_profile)) 
         return jsonify(user_profile)
     else:
-        current_app.logger.error("User profile not found for email: email")
-        return jsonify({"message": "User profile not found"}), 404   
-
+        current_app.logger.error(f"User profile not found for email: {email}")
+        return jsonify({"message": "User profile not found"}), 404 
+      
 
 
 def send_welcome_email(firstname, email):
