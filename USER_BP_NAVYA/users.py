@@ -82,24 +82,24 @@ def user_register():
   Confirm_password = users_data['Confirm_password']
   accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slotzz.in"]
   if not any(Email.endswith(domain) for domain in accepted_domains):
-            return "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in"
+            return "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in", 400
 
 
   if len(Password) < 8 or not (any(c.isdigit() for c in Password) and any(c.isalpha() for c in Password) and any(not c.isalnum() for c in Password)):
-            return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"
+            return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character", 400
 
   existing_user = dac.find_one({"Email": users_data['Email']})
   if users_data['Password'] != users_data['Confirm_password']:
-    return "Password and confirm password didn't match. Please re-enter your password."
+    return "Password and confirm password didn't match. Please re-enter your password.", 400
   if existing_user:
-        return 'User with this emailid already exists. Please use a different email or proceed to the user login page.'
+        return 'User with this emailid already exists. Please use a different email or proceed to the user login page.',400
   hashed_password = bcrypt.hashpw(users_data['Password'].encode('utf-8'), bcrypt.gensalt())
   users_data['Password'] = hashed_password
   hashed_password1 = bcrypt.hashpw(users_data['Confirm_password'].encode('utf-8'), bcrypt.gensalt())
   users_data['Confirm_password'] = hashed_password1
   users_data['Permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
   dac.insert_one(users_data)
-  return 'Congratulations! User registered successfully. You can now proceed to the login. '
+  return 'Congratulations! User registered successfully. You can now proceed to the login. ', 200
 
 
 
