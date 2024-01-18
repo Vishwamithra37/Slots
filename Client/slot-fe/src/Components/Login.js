@@ -31,7 +31,7 @@ const Login = () => {
           return;
         }
         try {
-          const response = await axios.post('http://localhost:5000/users_rel_routes/user_login', {
+          const response = await axios.post('http://localhost:5000/user_login', {
               Email,
               Password,
           });

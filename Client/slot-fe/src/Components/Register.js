@@ -51,7 +51,7 @@ const Register= () => {
           return;
       }
       try {
-        const response = await axios.post('http://localhost:5000/users_rel_routes/user_register', {
+        const response = await axios.post('http://localhost:5000/user_register', {
           Fullname,
           Contact_no,
           Email,
