@@ -5,7 +5,7 @@ import { Link,useNavigate } from 'react-router-dom';
 
 const Login = () => {
     
-    const [username,setUser]= useState()
+    const [email,setUser]= useState()
     const [password,setPassword]= useState()
     const [showPassword, setShowPassword] = useState(false);
     const navigate =useNavigate()
@@ -21,7 +21,7 @@ const Login = () => {
     const handleSubmit=async (e)=>{
         e.preventDefault();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(username)){
+        if(!emailRegex.test(email)){
           alert("please enter a valid email address")
           return;
         }
@@ -31,26 +31,21 @@ const Login = () => {
           return;
         }
         try {
-          const response = await axios.post('http://127.0.0.1:5000/users_rel_routes/user_login', {
-            username,
-            password,
-        });
-        console.log(response.data); 
-          if (response.ok) {
-              const data = await response.json();
-              // Do something with the response data if needed
-              console.log(data);
-              navigate('/');
-          } else {
-              console.error('Failed to log in');
-              // Handle error cases here (display error messages, etc.)
-          }
+          const response = await axios.post('http://localhost:5000/users_rel_routes/user_login', {
+              email,
+              password,
+          });
+          const userData = response.data;
+          console.log(userData);
+          navigate('/Nav');
+          // Handle successful login, e.g., redirect to dashboard
       } catch (error) {
-          console.error('wrong credentials:', error);
-          alert("credentials are invalid")
-          // Handle network errors or exceptions here
+          console.error('Error:', error);
+          if (error.response && error.response.data) {
+              console.error('Response Data:', error.response.data);
+          }
+          alert('Login failed. Please check your credentials and try again.');
       }
-      
         
     }
         
@@ -62,23 +57,39 @@ const Login = () => {
  
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-violet-500">
-      <h1 className="text-4xl font-bold text-gray-900 ">Login Page</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-cover bg-center " 
+    
+     style={{
+        backgroundImage: "url('tiv.jpg')",
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        width: '100vw', // Set the width to the full viewport width
+        height: '100vh', // Set the height to the full viewport height
+      }}>
+    {/* Rest of your code */}
+    <div className="flex justify-start align-left w-2/3">
+    
+      <h1 className="text-4xl font-bold text-gray-900  text-left w-3/4">Login Page</h1>
+      </div>
+    
+      
       <br/>
+      
+     
 
-      <div className="w-full max-w-md">
+      <div className="flex  justify-start w-3/4">
        
-        <form  className="bg-blue-200 shadow-lg rounded px-12 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
-        <div className= "mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-              Username
+        <form  className="bg-blue-200 shadow-lg rounded px-12 pt-6 pb-8 mb-4 align-left w-3/2"  onSubmit={handleSubmit}>
+        <div className= "mb-4 ">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+        email
             </label>
         <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        type='text'
-        name='username'
+        type='email'
+        name='email'
         placeholder='enter email address'
         //className='form-control'
-        value={username}
+        value={email}
         onChange={(e)=> setUser(e.target.value)}
         
         required
@@ -138,7 +149,12 @@ const Login = () => {
         
       </form>
       </div>
-    </div>
+      </div>
+      
+    
+  
+    
+    
   )
     }
 

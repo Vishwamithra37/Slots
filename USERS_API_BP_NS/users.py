@@ -70,7 +70,9 @@ def user_register():
           description: "Validation error"
            """
   
-
+ # print(dict(str(request.get_data())))
+      
+  
   users_data = request.get_json()
   Fullname = users_data['Fullname']
   #lastname = users_data['lastname']
@@ -112,7 +114,7 @@ def user_login():
     if user and bcrypt.checkpw(password.encode('utf-8'), user['password']):
         token = jwt.encode({'email': email, 'permissions': user['permissions']}, current_app.secret_key, algorithm='HS256')
         session['token'] = token
-        welcome_message = "Welcome to the Slotzz!\n" + user["firstname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
+        welcome_message = "Welcome to the Slotzz!\n" + user["Fullname"] + "\n! You are now logged in.\n\nWhat would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the number corresponding to your desired action."
         return welcome_message
     else:
         return 'Invalid credentials'
