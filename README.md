@@ -53,3 +53,33 @@ run the app.py file.
  4.Bingo.You can see the routes and inputs that routes expecting and also the type of input
  
 
+##################################################
+
+## HOW TO USE GIT AND GITHUB DESKTOP 
+# 1.open github in web go to issues create new issue
+
+   add title 
+   
+   submit new issue
+   
+   create new branch
+   
+   change branch
+   
+   open with github desktop
+
+# 2.open git hub desktop
+
+   check branch
+   
+   fetch origin
+   
+   verify changed files then commit
+   
+   create pull request
+   
+# 3. then goto git hub web
+   
+   create pull request
+   
+   check conflicts then merge
