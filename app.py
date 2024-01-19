@@ -1,4 +1,5 @@
-from flask import  Flask,jsonify
+from flask import  Flask,jsonify,render_template
+import flask
 from flask_swagger import swagger
 from ADMIN_BP_LEELA.admin import admin_page
 from USER_BP_NAVYA.users import users_bp
@@ -11,6 +12,16 @@ app.secret_key = os.urandom(24)
 app.register_blueprint(admin_page)
 app.register_blueprint(users_bp)
 app.register_blueprint(slots_bp)
+
+
+
+
+
+
+@app.route('/loginpage')
+def login_test():
+    return  flask.render_template('login.html')
+
 
 @app.route('/')
 def hello():
