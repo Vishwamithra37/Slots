@@ -87,6 +87,9 @@ def user_register():
 
   if len(Password) < 8 or not (any(c.isdigit() for c in Password) and any(c.isalpha() for c in Password) and any(not c.isalnum() for c in Password)):
             return "Password should be at least 8 characters and contain at least one digit, one letter, and one special character", 400
+  if not Contact_no.isdigit() or len(Contact_no) != 10:
+    return "Invalid contact number format. Please enter a 10-digit number.", 400
+
 
   existing_user = dac.find_one({"Email": users_data['Email']})
   if users_data['Password'] != users_data['Confirm_password']:
@@ -311,7 +314,9 @@ def view_profile():
     
     user_data = request.get_json() 
     Email = user_data["Email"]
-    user_profile = dac.find_one({"Email": Email})  
+    user_profile = dac.find_one({"Email": Email})   
+
+
     if  user_profile:
         user_profile['_id'] = str(user_profile['_id'])
         user_profile['Password'] = user_profile['Password'].decode('utf-8')
