@@ -74,6 +74,7 @@ def user_register():
   
 
   users_data = request.get_json()
+  print(users_data)
   Fullname = users_data['Fullname']
   #lastname = users_data['lastname']
   Email = users_data['Email']
@@ -110,6 +111,7 @@ def user_register():
 def user_login():
     
     users_data = request.get_json()
+    print(users_data)
     Email = users_data['Email']
     Password = users_data['Password']
 
