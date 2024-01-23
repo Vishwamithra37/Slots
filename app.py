@@ -16,6 +16,13 @@ app.register_blueprint(slots_bp)
 
 
 
+@app.route('/home')
+def home():
+    return  "welcome to home page"
+
+@app.route('/signuppage')
+def signup_test():
+    return  flask.render_template('signup.html')
 
 
 @app.route('/loginpage')
