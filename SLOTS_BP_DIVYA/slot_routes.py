@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, request, jsonify
 from bson import json_util 
 import pymongo
 from pymongo import mongo_client
-from ADMIN_BP_LEELA.admin import admin_page
+#from ADMIN_BP_LEELA.admin import admin_page
 
 app = Flask(__name__)
 
