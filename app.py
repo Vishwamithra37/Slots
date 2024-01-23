@@ -7,6 +7,7 @@ from USER_BP_NAVYA.users import users_bp
 import os
 
 app = Flask(__name__)
+
 app.secret_key = os.urandom(24)
 
 app.register_blueprint(admin_page)

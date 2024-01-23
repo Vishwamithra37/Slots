@@ -1,11 +1,13 @@
+function isStrongPassword(password) {
+  // Password should be at least 6 characters long
+  const strongPasswordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/;
+  return strongPasswordRegex.test(password);
+}
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-function isValidPassword(password) {
-  return password.length === 6;
-}
 
 function submitForm(e) {
   e.preventDefault();
@@ -20,12 +22,12 @@ function submitForm(e) {
     return;
   }
 
-  // Validate password (e.g., minimum length)
-  // if (!isValidPassword(Password)) {
-  //     console.error('Invalid password');
-  //     // Handle invalid password (e.g., show an error message)
-  //     return;
-  // }
+  // Validate password (e.g., alphanumeric with minimum length)
+  if (!isStrongPassword(Password)) {
+    console.error('Invalid password');
+    // Handle invalid password (e.g., show an error message)
+    return;
+  }
 
   fetch("/user_login", {
     method: "post",
@@ -36,9 +38,9 @@ function submitForm(e) {
   })
     .then((response) => response.json())
     .then((data) => {
-        // Redirect to the home page if login is successful
-        window.location.href = "/home.html";
-      })
+      // Redirect to the home page if login is successful
+      window.location.href = "/home";
+    })
     .catch((error) => {
       console.error("Error:", error);
     });
