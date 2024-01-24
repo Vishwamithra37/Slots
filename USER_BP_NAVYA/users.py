@@ -1,5 +1,6 @@
-from flask import Flask,current_app,Blueprint, jsonify,json, request,session,flash,url_for
+from flask import Flask,current_app,Blueprint, jsonify,json, request,session,flash
 from flask_mail import Mail, Message
+import flask
 from pymongo import MongoClient, UpdateOne
 import os
 import datetime
@@ -12,17 +13,16 @@ import bcrypt
 import jwt
 from bson.binary import Binary
 import base64
+import global_config
+from decorators import login_required
 
-#app = Flask(__name__)
-#secret_key = os.urandom(24)
-#app.secret_key = secret_key
+
 
 users_bp = Blueprint('users', __name__)
-client = MongoClient('mongodb://localhost:27017/')
-db = client['Slotzz']
+client = MongoClient(global_config.MONGOCLIENT)
+db = client[global_config.DB]
 dac =db["Account_holders"]
-#app.config['MONGO_URI'] = 'mongodb://localhost:27017/slotzzz'
-#mongo = PyMongo(app)
+
 
 """app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -76,12 +76,11 @@ def user_register():
   users_data = request.get_json()
   print(users_data)
   Fullname = users_data['Fullname']
-  #lastname = users_data['lastname']
   Email = users_data['Email']
   Contact_no = users_data['Contact_no']
   Password = users_data['Password']
   Confirm_password = users_data['Confirm_password']
-  accepted_domains = ["gmail.com", "yahoo.com", "outlook.com", "slotzz.in"]
+  accepted_domains = global_config.ACCEPTED_DOMAINS
   if not any(Email.endswith(domain) for domain in accepted_domains):
             return jsonify({'message' : "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in"}), 400
 
@@ -101,7 +100,7 @@ def user_register():
   users_data['Password'] = hashed_password
   hashed_password1 = bcrypt.hashpw(users_data['Confirm_password'].encode('utf-8'), bcrypt.gensalt())
   users_data['Confirm_password'] = hashed_password1
-  users_data['Permissions'] = ['view_slots', 'book_slot',"cancel_booking", "view_history", "profile_update", "profile_view"]
+  users_data['Permissions'] = global_config.PERMISSIONS
   dac.insert_one(users_data)
   return  jsonify({'message' : 'Congratulations! User registered successfully. You can now proceed to the login.'}), 200
 
@@ -120,17 +119,17 @@ def user_login():
      token = jwt.encode({'Email': Email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, current_app.config['SECRET_KEY'], algorithm='HS256')
      user['token'] = token 
      dac.update_one({"Email": Email}, {"$set": {"token": token}})
-
+     flask.session.update({"token":token})
+     #session['token'] = token
 
      welcome_message = f"Welcome to the Slotzz, {user['Fullname']}! You are now logged in. What would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the corresponding number for your desired action."
      return jsonify({'message': welcome_message, 'token': token})
     else:
      return jsonify({'message': 'Invalid username or password'}), 401
+
   
-    
-
-
 @users_bp.route('/user_logout', methods=['POST'])
+@login_required
 def user_logout():
     """swagger: '2.0'
 info:
@@ -265,6 +264,7 @@ def password_reset():
 
 
 @users_bp.route('/user_profile_edit', methods=['PUT'])
+@login_required
 def edit_user_profile():
     """
     Update user profile
@@ -301,7 +301,8 @@ def edit_user_profile():
     result = dac.update_one({'Email': Email}, {'$set': {'Email': new_email, 'Contact_no': new_contact}}) 
 
     if result.modified_count > 0: 
-        user = User_Finder.emailfinder(new_email) 
+        user = User_Finder.emailfinder(new_email)
+            
         if user:
             user["Email"] = new_email
             user['Contact_no'] = new_contact
@@ -309,9 +310,10 @@ def edit_user_profile():
         else:
             return "User profile updated in the database, but user data retrieval failed"
     else:
-        return "User not found"   
+        return "User not found", 404   
     
 @users_bp.route('/user_profile_view', methods=['POST'])
+@login_required
 def view_profile():
     
     user_data = request.get_json() 
