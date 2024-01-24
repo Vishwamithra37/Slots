@@ -1,9 +1,6 @@
-import datetime
-from flask import Blueprint
-from flask import Flask, request, jsonify
-from.config import collection  as dac
-from.dbops import resource
-
+from flask import Blueprint, Flask, request, jsonify
+from .config import collection as dac
+from .dbops import Resource  # Assuming Resource is the correct class name for creating a resource
 
 admin_page = Blueprint('admin', __name__)
 
@@ -19,17 +16,13 @@ def create_resource():
     slot_open_time = resource_data.get('slot_open_time')
     slot_close_time = resource_data.get('slot_close_time')
     max_bookings_per_slot = resource_data.get('max_bookings_per_slot')
-    resource_obj = resource(name=resource_name,description=resource_description,slot_duration=slot_duration,total_slots=total_slots,start_date=start_date,end_date=end_date,slot_open_time=slot_open_time,slot_close_time=slot_close_time,max_bookings_per_slot=max_bookings_per_slot)
+    resource_obj = Resource(name=resource_name, description=resource_description, slot_duration=slot_duration, total_slots=total_slots, start_date=start_date, end_date=end_date, slot_open_time=slot_open_time, slot_close_time=slot_close_time, max_bookings_per_slot=max_bookings_per_slot)
     try:
-        resource_obj.validate()
+        if not resource_obj.validate():
+            raise ValueError("Invalid resource data")
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+
     dac.insert_one(resource_data)
     return jsonify({"message": "Resource created successfully"}), 201
     
-
-
-
-
-
-
