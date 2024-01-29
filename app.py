@@ -7,7 +7,7 @@ from SLOTS_BP_DIVYA.slot_routes import slots_bp
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = "this is my secret key"
 
 app.register_blueprint(admin_page)
 app.register_blueprint(users_bp)

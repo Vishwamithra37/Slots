@@ -2,7 +2,7 @@ PERMISSIONS = ['view_slots',
                 'book_slot',
                 "cancel_booking",
                 "view_history", 
-                "profile_update",
+                "edit_user_profile",
                 "profile_view"]
 ACCEPTED_DOMAINS = ["gmail.com",
                     "yahoo.com",

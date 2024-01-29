@@ -263,7 +263,7 @@ def password_reset():
       
 
 
-@users_bp.route('/user_profile_edit', methods=['PUT'])
+@users_bp.route('/user_profile_edit', methods=['POST'])
 @login_required
 def edit_user_profile():
     """
@@ -294,6 +294,7 @@ def edit_user_profile():
       404:
         description: User not found
     """
+    print(flask.session)
     user_data = request.get_json()   
     Email = user_data["Email"]   
     new_email = user_data["new_email"]   
