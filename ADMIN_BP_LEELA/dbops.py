@@ -1,9 +1,17 @@
 import datetime
 import re
 from.config import collection as dac
+import uuid
+
+ 
+
+
+
+
+
 
 class Resource:
-    def __init__(self, name, description, slot_duration, total_slots, start_date, end_date, slot_open_time, slot_close_time, max_bookings_per_slot):
+    def __init__(self, name, description, slot_duration, total_slots, start_date, end_date, slot_open_time, slot_close_time, max_bookings_per_slot,admin_id):
         self.name = name
         self.description = description
         self.slot_duration = slot_duration
@@ -13,6 +21,10 @@ class Resource:
         self.slot_open_time = slot_open_time
         self.slot_close_time = slot_close_time
         self.max_bookings_per_slot = max_bookings_per_slot
+        if admin_id is None:
+            self.admin_id = str(uuid.uuid4())  
+        else:
+            self.admin_id = admin_id
 
      
     def validate_name(self, name):
@@ -21,7 +33,18 @@ class Resource:
         if len(name) < 3:
             return False
         return True
-
+    def validate_unique_name_for_admin(self, name, admin_id):
+        existing_resource = dac.find_one({"name": name, "admin_id": admin_id})
+        if existing_resource:
+            return False  
+        return True  
+    
+    def validate_admin_id(self,admin_id):
+        if admin_id is None:
+            return False
+        if len(admin_id) < 3:
+            return False
+        return True
     def validate_description(self, description):
         if description is None:
             return False
@@ -90,10 +113,11 @@ class Resource:
             return True
         else:
             return False
-
+    
     def validate(self):
         return (
             self.validate_name(self.name) and
+            self.validate_unique_name_for_admin(self.name, self.admin_id)and
             self.validate_description(self.description) and
             self.validate_slot_duration(self.slot_duration) and
             self.validate_total_slots(self.total_slots) and
@@ -104,16 +128,22 @@ class Resource:
             self.validate_max_bookings_per_slot(self.max_bookings_per_slot)
         )
     
-    def to_dict(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "slot_duration": self.slot_duration,
-            "total_slots": self.total_slots,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
-            "slot_open_time": self.slot_open_time,
-            "slot_close_time": self.slot_close_time,
-            "max_bookings_per_slot": self.max_bookings_per_slot
-        }
-    
+def to_dict(self):
+    return {
+        "name": self.name,
+        "description": self.description,
+        "slot_duration": self.slot_duration,
+        "total_slots": self.total_slots,
+        "start_date": self.start_date,
+        "end_date": self.end_date,
+        "slot_open_time": self.slot_open_time,
+        "slot_close_time": self.slot_close_time,
+        "max_bookings_per_slot": self.max_bookings_per_slot,
+        "admin_id": self.admin_id  
+
+ 
+   }
+
+
+dac.insert_one({})
+
