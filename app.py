@@ -18,7 +18,19 @@ app.register_blueprint(slots_bp)
 
 @app.route('/home')
 def home():
-    return  "welcome to home page"
+    return  flask.render_template('home.html')
+
+@app.route('/about')
+def about_page():
+    return  flask.render_template('About.html')
+
+@app.route('/history')
+def history_page():
+    return  flask.render_template('History.html')
+
+@app.route('/resource')
+def resource_test():
+    return  flask.render_template('Resource.html')
 
 @app.route('/signuppage')
 def signup_test():
