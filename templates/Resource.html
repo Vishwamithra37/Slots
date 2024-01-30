@@ -1,0 +1,119 @@
+{% extends 'components/base2.html' %}
+{% block title %}Admin Resource Page{% endblock %}
+{% block content %}
+
+<body class="max-h-screen bg-green-300 bg-center style="background-image: url('{{ url_for('static', filename='images/tic.jpg') }}')">
+    
+    <div class="flex min-h-full flex-col justify-center align-left w-3/4 p-1 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-red-900">Admin Resource Form</h2>
+        </div>
+
+        <div class="mt-2 sm:mx-auto sm:w-full sm:max-w-sm">
+            <form class="space-y-6" id="admin_resource_form">
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name</label>
+                    <div class="mt-2">
+                        <input id="name" name="name" type="text" autocomplete="name"  placeholder="enter name"
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Description Field -->
+                <div>
+                    <label for="description" class="block text-sm font-medium leading-6 text-gray-900">Description</label>
+                    <div class="mt-2">
+                        <textarea id="description" name="description" rows="4"  placeholder="summary"
+                            class="block w-full rounded-md border-0 p-1 text-gray-900"></textarea>
+                    </div>
+                </div>
+
+                <!-- Slot Duration Field -->
+                <div>
+                    <label for="slot_duration" class="block text-sm font-medium leading-6 text-gray-900">Slot Duration</label>
+                    <div class="mt-2">
+                        <input id="slot_duration" name="slot_duration" type="time" autocomplete="slot_duration" 
+                         required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Total Slots Field -->
+                <div>
+                    <label for="total_slots" class="block text-sm font-medium leading-6 text-gray-900">Total Slots</label>
+                    <div class="mt-2">
+                        <input id="total_slots" name="total_slots" type="text" autocomplete="total_slots" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Start Date Field -->
+                <div>
+                    <label for="start_date" class="block text-sm font-medium leading-6 text-gray-900">Start Date</label>
+                    <div class="mt-2">
+                        <input id="start_date" name="start_date" type="date" autocomplete="start_date" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- End Date Field -->
+                <div>
+                    <label for="end_date" class="block text-sm font-medium leading-6 text-gray-900">End Date</label>
+                    <div class="mt-2">
+                        <input id="end_date" name="end_date" type="date" autocomplete="end_date" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Slot Open Time Field -->
+                <div>
+                    <label for="slot_open_time" class="block text-sm font-medium leading-6 text-gray-900">Slot Open Time</label>
+                    <div class="mt-2">
+                        <input id="slot_open_time" name="slot_open_time" type="time" autocomplete="slot_open_time" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Slot Close Time Field -->
+                <div>
+                    <label for="slot_close_time" class="block text-sm font-medium leading-6 text-gray-900">Slot Close Time</label>
+                    <div class="mt-2">
+                        <input id="slot_close_time" name="slot_close_time" type="time" autocomplete="slot_close_time" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                 <!-- Max Bookings Per Slot Field -->
+                 <div>
+                    <label for="max_bookings_per_slot" class="block text-sm font-medium leading-6 text-gray-900">Max Bookings Per Slot</label>
+                    <div class="mt-2">
+                        <input id="max_bookings_per_slot" name="max_bookings_per_slot" type="number" min="1" autocomplete="max_bookings_per_slot" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+
+                <!-- Admin ID Field -->
+                <div>
+                    <label for="admin_id" class="block text-sm font-medium leading-6 text-gray-900">Admin ID</label>
+                    <div class="mt-2">
+                        <input id="admin_id" name="admin_id" type="text" autocomplete="admin_id"  placeholder="enter your id" required
+                            class="block w-full rounded-md border-0 p-1 text-gray-900">
+                    </div>
+                </div>
+                <div>
+                    <button type="submit"
+                        class="flex w-full justify-center rounded-md bg-indigo-600 px-3 p-1 text-sm font-semibold leading-6 text-white">Submit</button>
+                </div>
+            </form>
+
+           
+        </div>
+    </div>
+</body>
+
+{% endblock content %}
+
+{% block js_scripts %}
+<script src="{{ url_for('static', filename='js/resource.js') }}"></script>
+{% endblock %}
