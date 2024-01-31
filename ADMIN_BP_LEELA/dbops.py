@@ -58,6 +58,8 @@ class Resource:
         if slot_duration < 1:
             return False
         return True
+       
+    
 
     def validate_total_slots(self, total_slots):
         if total_slots is None:
@@ -114,6 +116,13 @@ class Resource:
         else:
             return False
     
+    def delete_permissions():
+        pass
+        return True
+    def update_permissions():
+        return True
+def permission():
+   
     def validate(self):
         return (
             self.validate_name(self.name) and
@@ -145,5 +154,5 @@ def to_dict(self):
    }
 
 
-dac.insert_one({})
+
 
