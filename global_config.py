@@ -18,4 +18,4 @@ DB = 'Slotzz'
 COLLECTION_RESOURCE_DETAILS = "resource_details"
 COLLECTION_ADMIN_DETAILS= "admin_details"
 ###collection ####names####
-
+ACCOUNT_HOLDERS_COLLECTION = "Account_holders"
