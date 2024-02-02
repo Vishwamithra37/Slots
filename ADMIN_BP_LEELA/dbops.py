@@ -116,12 +116,7 @@ class Resource:
         else:
             return False
     
-    def delete_permissions():
-        pass
-        return True
-    def update_permissions():
-        return True
-def permission():
+    
    
     def validate(self):
         return (
@@ -136,7 +131,17 @@ def permission():
             self.validate_slot_close_time(self.slot_close_time) and
             self.validate_max_bookings_per_slot(self.max_bookings_per_slot)
         )
-    
+def permissions_data():
+    email = "test@example.com"
+    return {
+        "email": email,
+        "permissions": [
+            "create_resource",
+            "update_resource",
+            "delete_resource"]
+    }
+
+
 def to_dict(self):
     return {
         "name": self.name,
@@ -148,10 +153,9 @@ def to_dict(self):
         "slot_open_time": self.slot_open_time,
         "slot_close_time": self.slot_close_time,
         "max_bookings_per_slot": self.max_bookings_per_slot,
-        "admin_id": self.admin_id  
+        "admin_id": self.admin_id
+    }
 
- 
-   }
 
 
 
