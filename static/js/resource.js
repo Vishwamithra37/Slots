@@ -13,7 +13,7 @@ function submitForm(e) {
     const admin_id = document.getElementById("admin_id").value;
 
     
-    fetch("/Create_resource", {
+    fetch("/admin/resource", {
         method: "post",
         headers: {
           "Content-Type": "application/json",

@@ -13,10 +13,11 @@
   <body>
     {% include 'components/navbar.html' %}
     <div>{% block content %}{% endblock %}</div>
+    <div id="footer">{% include 'components/footer.html '%}</div>
     
     
     
   </body>
-  <div id="footer">{% include 'components/footer.html '%}</div>
+  
   {% block js_scripts %} {% endblock %}
 </html>
