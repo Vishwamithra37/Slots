@@ -9,25 +9,48 @@ function isValidEmail(email) {
 }
 
 
+
+
 function submitForm(e) {
   e.preventDefault();
+  const emailInput = document.getElementById("Email");
+  const passwordInput = document.getElementById("Password");
 
-  const Email = document.getElementById("Email").value;
-  const Password = document.getElementById("Password").value;
+  const emailError = document.getElementById("email-error");
+  const passwordError = document.getElementById("password-error");
 
+  const Email = emailInput.value.trim();
+  const Password = passwordInput.value.trim();
   // Validate email format
   if (!isValidEmail(Email)) {
     console.error("Invalid email format");
-    // Handle invalid email (e.g., show an error message)
+    // Display error message for email
+    emailError.textContent = "Invalid email format";
+    // Clear any existing error messages for password and login
+    passwordError.textContent = "";
+    loginError.textContent = "";
     return;
-  }
+}
 
-  // Validate password (e.g., alphanumeric with minimum length)
-  if (!isStrongPassword(Password)) {
+// Validate password (e.g., alphanumeric with minimum length)
+if (!isStrongPassword(Password)) {
     console.error('Invalid password');
-    // Handle invalid password (e.g., show an error message)
+    // Display error message for password
+    passwordError.textContent = "Invalid password";
+    // Clear any existing error messages for email and login
+    emailError.textContent = "";
+  
     return;
-  }
+}
+
+// Clear any existing error messages
+emailError.textContent = "";
+passwordError.textContent = "";
+
+
+// Continue with form submission or other actions
+// ...
+
 
   fetch("/user_login", {
     method: "post",

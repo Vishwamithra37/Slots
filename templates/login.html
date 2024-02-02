@@ -1,10 +1,9 @@
-
 {% extends 'components/base.html' %}
 {% block title %} login page {% endblock title %}
 {% block content %}
 
 
-<body class="max-h-screen bg-cover bg-center" style="background-image: url('{{ url_for('static', filename='images/tic.jpg') }}')">
+<body class="max-h-screen bg-cover bg-center bg-[url('/static/images/tic.jpg')]">
   
     <div class="flex min-h-full flex-col justify-start align-left w-3/4   px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -19,6 +18,8 @@
               <div class="mt-2">
                 <input id="Email" name="Email" type="Email" autocomplete="Email" required class="block w-full rounded-md border-0 p-2 ">
               </div>
+              <div id="email-error" class="text-red-500"></div>
+
             </div>
       
             <div>
@@ -27,10 +28,12 @@
                 <div class="text-sm">
                   <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
                 </div>
+                
               </div>
               <div class="mt-2">
                 <input id="Password" name="Password" type="Password" autocomplete="current-password" required class="block w-full rounded-md border-0 p-2  ">
               </div>
+              <div id="password-error" class="text-red-500"></div>
             </div>
       
             <div>

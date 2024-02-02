@@ -2,8 +2,7 @@
 {% block title %}Admin Resource Page{% endblock %}
 {% block content %}
 
-<body class="max-h-screen bg-green-300 bg-center style="background-image: url('{{ url_for('static', filename='images/tic.jpg') }}')">
-    
+<body class="max-h-screen   bg-cover bg-center bg-[url('/static/images/plain.jpeg')]">
     <div class="flex min-h-full flex-col justify-center align-left w-3/4 p-1 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-red-900">Admin Resource Form</h2>
@@ -33,7 +32,7 @@
                 <div>
                     <label for="slot_duration" class="block text-sm font-medium leading-6 text-gray-900">Slot Duration</label>
                     <div class="mt-2">
-                        <input id="slot_duration" name="slot_duration" type="time" autocomplete="slot_duration" 
+                        <input id="slot_duration" name="slot_duration" type="text" autocomplete="slot_duration" 
                          required
                             class="block w-full rounded-md border-0 p-1 text-gray-900">
                     </div>
