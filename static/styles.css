@@ -761,29 +761,19 @@ video {
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
 
+.bg-blue-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(147 197 253 / var(--tw-bg-opacity));
+}
+
 .bg-blue-700 {
   --tw-bg-opacity: 1;
   background-color: rgb(29 78 216 / var(--tw-bg-opacity));
 }
 
-.bg-gray-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-}
-
-.bg-green-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(134 239 172 / var(--tw-bg-opacity));
-}
-
 .bg-indigo-600 {
   --tw-bg-opacity: 1;
   background-color: rgb(79 70 229 / var(--tw-bg-opacity));
-}
-
-.bg-violet-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(221 214 254 / var(--tw-bg-opacity));
 }
 
 .bg-white {
@@ -796,62 +786,12 @@ video {
   background-color: rgb(250 204 21 / var(--tw-bg-opacity));
 }
 
-.bg-blue-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(219 234 254 / var(--tw-bg-opacity));
-}
-
-.bg-blue-300 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(147 197 253 / var(--tw-bg-opacity));
-}
-
-.bg-\[url\(\'\/img\/hero-pattern\.svg\'\)\] {
-  background-image: url('/img/hero-pattern.svg');
-}
-
-.bg-\[url\(\'\/static\/hero-pattern\.svg\'\)\] {
-  background-image: url('/static/hero-pattern.svg');
-}
-
-.bg-\[url\(\'\/static\/plain\.svg\'\)\] {
-  background-image: url('/static/plain.svg');
-}
-
-.bg-\[url\(\'\/static\/plain\.\'\)\] {
-  background-image: url('/static/plain.');
-}
-
-.bg-\[url\(\'\/static\/plain\.jpeg\'\)\] {
-  background-image: url('/static/plain.jpeg');
-}
-
 .bg-\[url\(\'\/static\/images\/plain\.jpeg\'\)\] {
   background-image: url('/static/images/plain.jpeg');
 }
 
-.bg-\[url\(\'\/static\/images\/tic\.jpeg\'\)\] {
-  background-image: url('/static/images/tic.jpeg');
-}
-
 .bg-\[url\(\'\/static\/images\/tic\.jpg\'\)\] {
   background-image: url('/static/images/tic.jpg');
-}
-
-.bg-\[url\(\'\/static\/images\/\.jpg\'\)\] {
-  background-image: url('/static/images/.jpg');
-}
-
-.bg-\[url\(\'\/static\/images\/im\.jpg\'\)\] {
-  background-image: url('/static/images/im.jpg');
-}
-
-.bg-\[url\(\'\/static\/images\/images\.jpg\'\)\] {
-  background-image: url('/static/images/images.jpg');
-}
-
-.bg-\[url\(\'\/static\/images\/images\.jpeg\'\)\] {
-  background-image: url('/static/images/images.jpeg');
 }
 
 .bg-cover {
@@ -1097,16 +1037,6 @@ video {
 .hover\:text-yellow-800:hover {
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity));
-}
-
-.hover\:text-green-500:hover {
-  --tw-text-opacity: 1;
-  color: rgb(34 197 94 / var(--tw-text-opacity));
-}
-
-.hover\:text-green-900:hover {
-  --tw-text-opacity: 1;
-  color: rgb(20 83 45 / var(--tw-text-opacity));
 }
 
 @media (min-width: 640px) {
