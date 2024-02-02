@@ -3,6 +3,7 @@ import flask
 from functools import wraps
 import global_config
 from pymongo import MongoClient
+from  ADMIN_BP_LEELA.config import admin_collection
 
 
 client = MongoClient(global_config.MONGOCLIENT)
@@ -35,8 +36,6 @@ def login_required(route_function):
     return wrapper_function
         
 
-
-
 def get_user_details_by_token(token):
     try:
         user = dac.find_one({"token": token})  
@@ -47,37 +46,36 @@ def get_user_details_by_token(token):
     except Exception as e:
         
         return None  
-
-
-import flask
-
-def admin_delete_required(f):
-    @wraps(f)
+    
+def admin_login_required(route_function):
+    @wraps(route_function)
     def decorated_function(*args, **kwargs):
-        print(flask.request.headers)
-        if "token" not in flask.session:
-            return {"status": "error", "message": "admin required"}, 401
-        token = flask.session["token"]
-       
-        user = session.get('token')
-        if 'Authorization' not in flask.request.headers:
-            return jsonify({'error': 'Unauthorized'}), 401
+        
+         admin_id = flask.request.get_json()["admin_id"]
+         user_email=kwargs["user_details"]["Email"]
+        
+         Permission_name=route_function.__name__
+         print("this is from admin login_required")
+         print(Permission_name)
+         admin_permissions=admin_collection_verification(admin_id,user_email)
+         if admin_permissions:
+             if Permission_name in admin_permissions:
+                 print(" admin login decorator is working")
+                 return route_function(*args, **kwargs)
+             else:
+                 return jsonify({"status": "error", "message": "Insufficient permissions"}), 403
+         else:
+             return jsonify({"status": "error", "message": "Invalid admin id"}), 401
 
-        if not user or not user.is_admin:
-            return jsonify({"error": "Admin access required"}), 403
-
-        return f(*args, **kwargs)
+             
 
     return decorated_function
 
+def admin_collection_verification(admin_id,user_email):
+    admin_details = admin_collection.find_one({"email": user_email,"admin_id":admin_id})
+    if admin_details:
+        return admin_details["Permissions"]
 
+    return False
 
-
-
- 
-
-
-
-        
-        
 

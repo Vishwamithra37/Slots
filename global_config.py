@@ -1,3 +1,8 @@
+ADMIN_PERMISSIONS =["create_resource",
+                    "delete_slot",
+                    "update_by_admin_id"
+                    ] 
+
 PERMISSIONS = ['view_slots',
                 'book_slot',
                 "cancel_booking",
@@ -5,9 +10,9 @@ PERMISSIONS = ['view_slots',
                 "edit_user_profile",
                 "profile_view",
                 "create_resource",
-                "get_all_resources"]
-ADMIN_PERMISSIONS =["update",
-                    "delete"]
+                "get_all_resources"] +ADMIN_PERMISSIONS
+
+
 ACCEPTED_DOMAINS = ["gmail.com",
                     "yahoo.com",
                     "outlook.com",
