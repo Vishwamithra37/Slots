@@ -20,8 +20,9 @@ RESOURCE_DETAILS_COLLECTION= db[global_config.COLLECTION_RESOURCE_DETAILS]
 
 # Define Flask Blueprint for slot operations
 slots_bp = Blueprint('slots', __name__)
-@login_required
+
 @slots_bp.route('/book_slot', methods=['POST'])
+@login_required
 def book_slot():
     booking_data = request.get_json()
     title_name= booking_data["title_name"],
