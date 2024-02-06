@@ -1,4 +1,5 @@
 ADMIN_PERMISSIONS =["create_resource",
+                    "booking_resource",
                     "delete_slot",
                     "update_by_admin_id"
                     ] 
@@ -24,3 +25,4 @@ COLLECTION_RESOURCE_DETAILS = "resource_details"
 COLLECTION_ADMIN_DETAILS= "admin_details"
 ###collection ####names####
 ACCOUNT_HOLDERS_COLLECTION = "Account_holders"
+BOOKING_RESOURCE_COLLECTION = "booking_resource_details"
