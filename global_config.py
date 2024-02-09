@@ -13,7 +13,7 @@ PERMISSIONS = ['view_slots',
                 "password_reset_request",
                 "password_reset",
                 "edit_user_profile",
-                "profile_view",
+                "view_profile",
                 "create_resource",
                 "get_all_resources"] +ADMIN_PERMISSIONS
 
