@@ -32,7 +32,7 @@ app.config['MAIL_PASSWORD'] = 'navya@1234'
 
 mail = Mail(app)"""
 
-@users_bp.route('/user_register', methods=['POST'])
+@users_bp.route('/v1/user_register', methods=['POST'])
 def user_register():
   """user_register
       ---
@@ -106,7 +106,7 @@ def user_register():
 
 
 
-@users_bp.route('/user_login', methods=['POST'])
+@users_bp.route('/v1/user_login', methods=['POST'])
 def user_login():
     
     users_data = request.get_json()
@@ -128,7 +128,7 @@ def user_login():
      return jsonify({'message': 'Invalid username or password'}), 401
 
   
-@users_bp.route('/user_logout', methods=['POST'])
+@users_bp.route('/v1/user_logout', methods=['POST'])
 @login_required
 def user_logout():
     """swagger: '2.0'
@@ -159,8 +159,9 @@ paths:
         return jsonify({'message': 'Token is missing'}), 401
 
 
-@users_bp.route('/password-reset-request', methods=['POST'])
-def password_reset_request():
+@users_bp.route('/v1/password-reset-request', methods=['POST'])
+@login_required
+def password_reset_request(user_details):
     """swagger: '2.0'
 info:
   title: Password Reset API
@@ -237,19 +238,19 @@ paths:
               error:
                 type: string
                 example: Invalid token"""
-    Email = request.json['Email']
-    user =  User_Finder.emailfinder(Email)
-    if user:
-        token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-        
-        dac.update_one({'Email': Email}, {'$set': {'reset_token': token}})
-        return jsonify({'message': 'Password reset token has been sent to your email'})
-    else:
-        return jsonify({'error': 'User not found'})
+  
+    Email=user_details['Email']
 
-@users_bp.route('/password-reset', methods=['POST'])
-def password_reset():
-    Email = request.json['Email']
+    token = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+        
+    dac.update_one({'Email': Email}, {'$set': {'reset_token': token}})
+    return jsonify({'message': 'Password reset token has been sent to your email'})
+    
+
+@users_bp.route('/v1/password-reset', methods=['POST'])
+@login_required
+def password_reset(user_details):
+    Email = user_details['Email']
     token = request.json['token']
     new_password = request.json['new_password']
     user = dac.find_one({'Email': Email, 'reset_token': token})
@@ -258,12 +259,11 @@ def password_reset():
         # Update the user's password in the database with the hashed password
         dac.update_one({'Email': Email}, {'$set': {'Password': hashed_new_password}, '$unset': {'reset_token': 1}})
         return jsonify({'message': 'Password has been reset successfully'})
-    else:
-        return jsonify({'error': 'Invalid token'})
+    return jsonify({'error': 'Invalid token'})
       
 
 
-@users_bp.route('/user_profile_edit', methods=['POST'])
+@users_bp.route('/v1/user_profile_edit', methods=['POST'])
 @login_required
 def edit_user_profile():
     """
@@ -313,7 +313,7 @@ def edit_user_profile():
     else:
         return "User not found", 404   
     
-@users_bp.route('/user_profile_view', methods=['POST'])
+@users_bp.route('/v1/user_profile_view', methods=['POST'])
 @login_required
 def view_profile():
     
