@@ -264,7 +264,7 @@ def password_reset(user_details):
 
 @users_bp.route('/v1/user_profile_edit', methods=['POST'])
 @login_required
-def edit_user_profile():
+def edit_user_profile(user_details):
     """
     Update user profile
     ---
@@ -293,42 +293,34 @@ def edit_user_profile():
       404:
         description: User not found
     """
-    print(flask.session)
-    user_data = request.get_json()   
-    Email = user_data["Email"]   
-    new_email = user_data["new_email"]   
+    print(flask.session) 
+    Email = user_details["Email"]  
+    print("Email:", Email)
+    user_data = request.get_json()
     new_contact = user_data["new_contact"] 
-    result = dac.update_one({'Email': Email}, {'$set': {'Email': new_email, 'Contact_no': new_contact}}) 
-
-    if result.modified_count > 0: 
-        user = User_Finder.emailfinder(new_email)
-            
-        if user:
-            user["Email"] = new_email
-            user['Contact_no'] = new_contact
-            return "User profile updated successfully"
-        else:
-            return "User profile updated in the database, but user data retrieval failed"
+    print("new_contact:", new_contact)
+    result = dac.update_one({'Email': Email}, {'$set': {'Contact_no': new_contact}}) 
+    if result.modified_count > 0:
+        return "User profile updated successfully"
     else:
-        return "User not found", 404   
+        return "User not found", 404
     
 @users_bp.route('/v1/user_profile_view', methods=['POST'])
 @login_required
-def view_profile():
+def view_profile(user_details):
     
     user_data = request.get_json() 
-    Email = user_data["Email"]
+    Email = user_details["Email"]
     user_profile = dac.find_one({"Email": Email})   
 
 
     if  user_profile:
         user_profile['_id'] = str(user_profile['_id'])
         user_profile['Password'] = user_profile['Password'].decode('utf-8')
-        print(json.loads(json_util.dumps(user_profile)))
+        #print(json.loads(json_util.dumps(user_profile)))
         return json.loads(json_util.dumps(user_profile))
         return jsonify(user_profile)
     else:
-        #current_app.logger.error(f"User profile not found for email: {email}")
         return jsonify({"message": "User profile not found"}), 400
       
 
