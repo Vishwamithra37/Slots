@@ -26,13 +26,31 @@ class Resource:
         else:
             self.admin_id = admin_id
 
-     
+class Resource1:
+    def __init__(self, name=None, description=None, admin_id=None):
+        self.name = name
+        self.description = description
+        self.admin_id = admin_id
+
     def validate_name(self, name):
-        if name is None:
-            return False
-        if len(name) < 3:
-            return False
-        return True
+            if name is None:
+               return False
+            if len(name) < 3:
+               return False
+            return True
+
+class Resource2:
+    def __init__(self, slot_duration, total_slots, start_date, end_date, slot_open_time, slot_close_time, max_bookings_per_slot, admin_id):
+        self.slot_duration = slot_duration
+        self.total_slots = total_slots
+        self.start_date = start_date
+        self.end_date = end_date
+        self.slot_open_time = slot_open_time
+        self.slot_close_time = slot_close_time
+        self.max_bookings_per_slot = max_bookings_per_slot
+        self.admin_id = admin_id
+     
+    
     def validate_unique_name_for_admin(self, name, admin_id):
         existing_resource = dac.find_one({"name": name, "admin_id": admin_id})
         if existing_resource:
