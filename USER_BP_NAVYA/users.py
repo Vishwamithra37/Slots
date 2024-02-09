@@ -130,7 +130,7 @@ def user_login():
   
 @users_bp.route('/v1/user_logout', methods=['POST'])
 @login_required
-def user_logout():
+def user_logout(user_details):
     """swagger: '2.0'
 info:
   title: User Logout API
@@ -145,19 +145,18 @@ paths:
           schema:
             type: string
             example: You have been logged out."""
-    
-    token = request.headers.get('Authorization')  
-
-    if token:
-        user = dac.find_one({"token": token})
-        if user:
-            dac.update_one({"Email": user['Email']}, {"$unset": {"token": 1}})
-            return jsonify({'message': 'You have been successfully logged out'})
-        else:
-            return jsonify({'message': 'Invalid token'}), 401
+    Email=user_details["Email"]
+    print("Session Data Before Logout:", session)
+    session.pop('token', None) 
+    print("Session Data After Logout:", session)
+    result = dac.update_one({"Email": Email},{"$unset": {"token": ""}})
+    if result.modified_count > 0:
+        print("Token deleted successfully from the database")
     else:
-        return jsonify({'message': 'Token is missing'}), 401
-
+        print("Token not found or could not be deleted from the database")
+    
+    logout_message = "You have been successfully logged out. Thank you for using Slotzz!"
+    return jsonify({'message': logout_message})
 
 @users_bp.route('/v1/password-reset-request', methods=['POST'])
 @login_required
