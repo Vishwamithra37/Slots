@@ -150,13 +150,10 @@ paths:
     session.pop('token', None) 
     print("Session Data After Logout:", session)
     result = dac.update_one({"Email": Email},{"$unset": {"token": ""}})
-    if result.modified_count > 0:
-        print("Token deleted successfully from the database")
-    else:
-        print("Token not found or could not be deleted from the database")
-    
-    logout_message = "You have been successfully logged out. Thank you for using Slotzz!"
-    return jsonify({'message': logout_message})
+    if result.modified_count:
+     logout_message = "You have been successfully logged out. Thank you for using Slotzz!"
+     return jsonify({'message': logout_message})
+    return {"status":"Logout failed,Try again"},400
 
 @users_bp.route('/v1/password-reset-request', methods=['POST'])
 @login_required
@@ -299,29 +296,22 @@ def edit_user_profile(user_details):
     user_data = request.get_json()
     new_contact = user_data["new_contact"] 
     print("new_contact:", new_contact)
+    if not new_contact.isdigit() or len(new_contact) != 10:
+      return jsonify ({'message' : "Invalid contact number format. Please enter a 10-digit number."}), 400
     result = dac.update_one({'Email': Email}, {'$set': {'Contact_no': new_contact}}) 
     if result.modified_count > 0:
-        return "User profile updated successfully"
-    else:
-        return "User not found", 404
+        return {"message":"User profile updated successfully"}
+    return {"message":"User not found"},400
     
 @users_bp.route('/v1/user_profile_view', methods=['POST'])
 @login_required
 def view_profile(user_details):
+        user_details['_id'] = str(user_details['_id'])
+        del user_details["Password"]
+        del user_details["Confirm_password"]
+        del user_details["token"]
+        return {"message":user_details}
     
-    user_data = request.get_json() 
-    Email = user_details["Email"]
-    user_profile = dac.find_one({"Email": Email})   
-
-
-    if  user_profile:
-        user_profile['_id'] = str(user_profile['_id'])
-        user_profile['Password'] = user_profile['Password'].decode('utf-8')
-        #print(json.loads(json_util.dumps(user_profile)))
-        return json.loads(json_util.dumps(user_profile))
-        return jsonify(user_profile)
-    else:
-        return jsonify({"message": "User profile not found"}), 400
       
 
 
@@ -335,5 +325,4 @@ def send_welcome_email(firstname, email):
     #msg.body = "Thank you," +  user_details["firstname"]," +  "for registering with Slotzz! Enjoy your slot booking experience."
     mail.send(msg)
 
-#if __name__ == '__main__':
-  #app.run(debug=True)
+

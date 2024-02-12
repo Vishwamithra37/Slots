@@ -11,7 +11,7 @@ from . import fun
 
 admin_page = Blueprint('admin', __name__)
 
-@admin_page.route('/create_resource', methods=['POST'])
+@admin_page.route('/v1/create_resource', methods=['POST'])
 @login_required
 def create_resource(user_details):
     resource_data = request.get_json()
@@ -40,7 +40,7 @@ def create_resource(user_details):
     return jsonify({"message": "Resource created successfully"}), 201
 
 
-@admin_page.route('/booking/resource', methods=['POST'])
+@admin_page.route('/v1/booking/resource', methods=['POST'])
 @login_required
 def booking_resource(user_details):
     resource_data = request.get_json()
@@ -59,14 +59,14 @@ def booking_resource(user_details):
      existing = booking_resource_details.insert_one(resource_data)
     return jsonify ({"message": "Booking details saved successfully"}), 201
 
-@admin_page.route('/admin/resources', methods=['GET'])
+@admin_page.route('/v1/admin/resources', methods=['GET'])
 def get_all_resources():
     resources = [doc for doc in dac.find()]
     for doc in resources:
         doc["_id"] = str(doc["_id"])
     return jsonify(resources)
 
-@admin_page.route("/admin/delete_slot", methods=["POST"])
+@admin_page.route("/v1/admin/delete_slot", methods=["POST"])
 @login_required
 @admin_login_required
 def delete_slot(user_details):
@@ -86,7 +86,7 @@ def delete_slot(user_details):
         
      
 
-@admin_page.route('/admin/update_resource',methods=['Put'])
+@admin_page.route('/v1/admin/update_resource',methods=['Put'])
 @login_required
 @admin_login_required
 def update_by_admin_id(admin_id):
