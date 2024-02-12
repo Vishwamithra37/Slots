@@ -9,6 +9,7 @@ from USER_BP_NAVYA.users import users_bp
 import global_config
 from bson.json_util import dumps
 import jwt
+from bson import ObjectId
 
 # MongoDB connection
 client = pymongo.MongoClient("mongodb://localhost:27017/")  # Assuming MongoDB is running locally
@@ -21,9 +22,18 @@ RESOURCE_DETAILS_COLLECTION= db[global_config.COLLECTION_RESOURCE_DETAILS]
 # Define Flask Blueprint for slot operations
 slots_bp = Blueprint('slots', __name__)
 
-@slots_bp.route('/book_slot', methods=['POST'])
+@slots_bp.route('/v1/book_slot', methods=['POST'])
 @login_required
-def book_slot():
+def book_slot(data):
+    """This route is used to book a slot by the required information provided by the user
+
+    Args:
+        data (dict):  Contains all the necessary information about the user who wants to book a slot
+
+    Returns:
+        _type_: string--contains the message showing that weather the booking operation was succesful or not.  
+        If successful then it returns the Slot booked successfully else Not enough seats available for booking.
+    """
     booking_data = request.get_json()
     title_name= booking_data["title_name"],
     resource_name = booking_data["resource_name"]
@@ -59,20 +69,43 @@ def book_slot():
     # Create and save the booking here
        bookings_collection.insert_one(booking_data)
        return "Slot booked successfully"
-
-    else:
-     return "Not enough seats available for booking"
+    return "Not enough seats available for booking"
     
-@slots_bp.route('/user/booking_history', methods=['GET'])
-def booking_history():
-    booking_history=request.get_json()
-    Email = booking_history['Email'] 
-    user = ACCOUNT_HOLDERS_COLLECTION.find_one({"Email":Email})
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+@slots_bp.route('/v1/view_booking_history', methods=['GET'])
+@login_required
+def booking_history(user_details):
+    """This route provides the user with booking history through the Email of the user_details
 
-    booking_history = bookings_collection.find({"user_id": user["_id"]})
+    Args:
+        user_details (dict):  A dictionary containing details about a logged in user
+
+    Returns:
+        _type_: string -- returns a message stating user booking history which  includes all their bookings
+    """
+    Email = user_details['Email']
+    booking_history = bookings_collection.find({"user_id": user_details["_id"]})
     booking_history = list(booking_history)
     #to get the booking history
     json_booking_history = dumps(booking_history)
-    return json_booking_history
+    return {"user_booking_history":json_booking_history},200
+
+@slots_bp.route('/v1/cancel_booking/<string:_id>', methods=['DELETE'])
+@login_required
+def cancel_booking(user_details,_id):
+    """This route allows you to cancel the booking through booking id
+
+    Args:
+        user_details (dict): these are the user details which are retrieved @login_required
+        _id (string): it is the object_Id when booking is created
+
+    Returns:
+        _type_:  string -- It returns a message stating whether cancellation was successful or not
+    """
+    # Check if the booking exists
+
+    booking = bookings_collection.find_one({"_id": ObjectId(_id)})
+    if booking:
+        # Delete the booking from the database
+        bookings_collection.delete_one({"_id": ObjectId(_id)})
+        return "Booking canceled successfully"
+    return "Booking not found for the provided ID"
