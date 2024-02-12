@@ -4,7 +4,6 @@ import flask
 from pymongo import MongoClient, UpdateOne
 import os
 import datetime
-from .user_functions import User_Finder
 from bson import ObjectId
 from bson import json_util
 import random
@@ -15,6 +14,7 @@ from bson.binary import Binary
 import base64
 import global_config
 from decorators import login_required
+from dbops import DAC, Mail
 
 
 
@@ -34,45 +34,17 @@ mail = Mail(app)"""
 
 @users_bp.route('/v1/user_register', methods=['POST'])
 def user_register():
-  """user_register
-      ---
-      tags: 
-        - "Users"
-      
-      description: "Endpoint to register a new user with validation checks"
-      parameters:
-        - in: "body"
-          name: "user"
-          description: "User registration details"
-          required: true
-          schema:
-            type: "object"
-            properties:
-              Fullname:
-                type: "string"
-              Email:
-                type: "string"
-              Contact_no:
-                type: "string"
-              Password:
-                type: "string"
-              Confirm_password:
-                type: "string"
-      responses:
-        200:
-          description: "User registered successfully"
-          
-        400:
-          description: "Bad request"
-          
-        409:
-          description: "User already exists"
-          
-        422:
-          description: "Validation error"
-           """
+  """This route registers a new user in the system.
   
+  Keyword arguments:
+  argument -- "Fullname" (string) : The user's fullname.
+              "Email" (string): The user's email address.
+              "Contact_no" (string): The user's contact number.
+              "Password" (string): The user's password ( hashed with bcrypt).
+              "Confirm_password" (string): The user's confirm password (hashed with bcrypt).
 
+  Return:  A JSON response with a success message if the user is registered successfully, or an error message otherwise.
+  """
   users_data = request.get_json()
   print(users_data)
   Fullname = users_data['Fullname']
@@ -108,6 +80,17 @@ def user_register():
 
 @users_bp.route('/v1/user_login', methods=['POST'])
 def user_login():
+    """This route Logs in a user using their email and password, and returns a JWT token for authentication.
+
+    Keyword arguments:
+    argument --  (Request) The request object containing the user's data in JSON format.
+                "Email" (string): The user's email address.
+                "Password" (string): The user's password ( hashed with bcrypt).
+
+    
+    Return: token: (String) The JWT token for authentication.
+            message: (String) A welcome message for the user after logging in, otherwise an error message 
+    """
     
     users_data = request.get_json()
     print(users_data)
@@ -131,20 +114,14 @@ def user_login():
 @users_bp.route('/v1/user_logout', methods=['POST'])
 @login_required
 def user_logout(user_details):
-    """swagger: '2.0'
-info:
-  title: User Logout API
-  version: 1.0.0
-paths:
-  /user_logout:
-    post:
-      summary: Log out the user
-      responses:
-        200:
-          description: User has been logged out successfully
-          schema:
-            type: string
-            example: You have been logged out."""
+    """This route Logs out a user and removes their JWT token from the session.
+    
+    Keyword arguments:
+    argument -- "Email" (string) the email address of user to logout
+    Return: message (string) A success message after logout or returns an error message upon unsuccessful attempt
+    """
+    
+    
     Email=user_details["Email"]
     print("Session Data Before Logout:", session)
     session.pop('token', None) 
@@ -158,82 +135,13 @@ paths:
 @users_bp.route('/v1/password-reset-request', methods=['POST'])
 @login_required
 def password_reset_request(user_details):
-    """swagger: '2.0'
-info:
-  title: Password Reset API
-  version: 1.0.0
-paths:
-  /password-reset-request:
-    post:
-      summary: Request password reset
-      consumes:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            properties:
-              email:
-                type: string
-                example: user@example.com
-      responses:
-        200:
-          description: Password reset token has been sent to the user's email
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Password reset token has been sent to your email
-        404:
-          description: User not found
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: User not found
-
-  /password-reset:
-    post:
-      summary: Reset user's password
-      consumes:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          required: true
-          schema:
-            type: object
-            properties:
-              email:
-                type: string
-                example: user@example.com
-              token:
-                type: string
-                example: reset_token
-              new_password:
-                type: string
-                example: new_password
-      responses:
-        200:
-          description: Password has been reset successfully
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Password has been reset successfully
-        404:
-          description: Invalid token
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: Invalid token"""
+    """This route generates a password reset token 
+    
+    Keyword arguments:
+    argument -- "Email" (string)The email address of user
+    Return: message (string) - A success message after generating the password reset token.
+    """
+    
   
     Email=user_details['Email']
 
@@ -246,6 +154,17 @@ paths:
 @users_bp.route('/v1/password-reset', methods=['POST'])
 @login_required
 def password_reset(user_details):
+    """This routes resets a user's password using a password reset token.
+
+    
+    Keyword arguments:
+    argument -- "Email" {string} - The email address of the user to reset the password for.
+                "token" {string} - The password reset token generated in the password reset request route.
+                "new_password" {string} - The new password to set for the user.
+
+    Return: message {string} - A success message after resetting the password.
+    """
+    
     Email = user_details['Email']
     token = request.json['token']
     new_password = request.json['new_password']
@@ -262,34 +181,17 @@ def password_reset(user_details):
 @users_bp.route('/v1/user_profile_edit', methods=['POST'])
 @login_required
 def edit_user_profile(user_details):
+    """This route edits a user's profile information(contact number)
+
+    
+    Keyword arguments:
+    argument --  "Email" {string} - The email address of the user to edit the profile for.
+                 "new_contact" (string) - The new contact number which user uses in future.
+                
+
+    Return: message {string} - A success message after updating the user's profile.
     """
-    Update user profile
-    ---
-    tags:
-      - users
-    description: Endpoint for updating a user's profile information
-    parameters:
-      - in: body
-        name: user_data
-        required: true
-        schema:
-          type: object
-          properties:
-            email:
-              type: string
-              description: The user's email
-            new_email:
-              type: string
-              description: The new email to be updated
-            new_contact:
-              type: string
-              description: The new contact information
-    responses:
-      200:
-        description: User profile updated successfully
-      404:
-        description: User not found
-    """
+    
     print(flask.session) 
     Email = user_details["Email"]  
     print("Email:", Email)
@@ -306,6 +208,15 @@ def edit_user_profile(user_details):
 @users_bp.route('/v1/user_profile_view', methods=['POST'])
 @login_required
 def view_profile(user_details):
+        """This route displays a user's profile information, excluding their password and token.
+
+        
+        Keyword arguments:
+        argument -- user_ {json} - The user's profile information.
+
+        Return: message {string} - The user's profile information.
+        """
+        
         user_details['_id'] = str(user_details['_id'])
         del user_details["Password"]
         del user_details["Confirm_password"]
@@ -315,14 +226,13 @@ def view_profile(user_details):
       
 
 
-def send_welcome_email(firstname, email):
+def send_welcome_email(user_details,firstname, email):
     users_data = request.get_json()
-    email = users_data['email']
-    user_details=User_Finder.emailfinder(email)
+    email = user_details['email']
     if user_details:
     
      msg = Message('Welcome to Slotzz', sender='your_email@example.com', recipients=[email])
     #msg.body = "Thank you," +  user_details["firstname"]," +  "for registering with Slotzz! Enjoy your slot booking experience."
-    mail.send(msg)
+    Mail.send(msg)
 
 
