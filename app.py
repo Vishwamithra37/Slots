@@ -2,7 +2,7 @@ from flask import  Flask,jsonify,render_template
 import flask
 from flask_swagger import swagger
 from ADMIN_BP_LEELA.routes1 import admin_page
-from ADMIN_BP_LEELA.routes import admin_page
+#from ADMIN_BP_LEELA.routes import admin_page
 from USER_BP_NAVYA.users import users_bp
 from SLOTS_BP_DIVYA.slot_routes import slots_bp
 import os

@@ -3,7 +3,7 @@ from flask_mail import Mail, Message
 import flask
 from pymongo import MongoClient, UpdateOne
 import os
-import datetime
+from datetime import datetime,timedelta
 from bson import ObjectId
 from bson import json_util
 import random
@@ -14,8 +14,8 @@ from bson.binary import Binary
 import base64
 import global_config
 from decorators import login_required
-from dbops import DAC, Mail
-
+from .dbops import find_user_by_email,update_user_fields
+from USER_BP_NAVYA.input_validations import validate_fullname
 
 
 users_bp = Blueprint('users', __name__)
@@ -46,32 +46,29 @@ def user_register():
   Return:  A JSON response with a success message if the user is registered successfully, or an error message otherwise.
   """
   users_data = request.get_json()
-  print(users_data)
   Fullname = users_data['Fullname']
   Email = users_data['Email']
   Contact_no = users_data['Contact_no']
   Password = users_data['Password']
   Confirm_password = users_data['Confirm_password']
   accepted_domains = global_config.ACCEPTED_DOMAINS
+  fullname_validation_result = validate_fullname(Fullname)
+  if fullname_validation_result:
+    return jsonify(fullname_validation_result), 400
   if not any(Email.endswith(domain) for domain in accepted_domains):
             return jsonify({'message' : "Invalid email domain. Allowed domains: gmail.com, yahoo.com, outlook.com, slotzz.in"}), 400
-
-
   if len(Password) < 8 or not (any(c.isdigit() for c in Password) and any(c.isalpha() for c in Password) and any(not c.isalnum() for c in Password)):
             return  jsonify ({'message' : "Password should be at least 8 characters and contain at least one digit, one letter, and one special character"}), 400
   if not Contact_no.isdigit() or len(Contact_no) != 10:
     return jsonify ({'message' : "Invalid contact number format. Please enter a 10-digit number."}), 400
-
-
-  existing_user = dac.find_one({"Email": users_data['Email']})
   if users_data['Password'] != users_data['Confirm_password']:
     return  jsonify ({'message' : "Password and confirm password didn't match. Please re-enter your password."}), 400
+  existing_user = find_user_by_email(dac, users_data['Email'])
   if existing_user:
         return jsonify({'message':'User with this emailid already exists. Please use a different email or proceed to the user login page.'}),400
   hashed_password = bcrypt.hashpw(users_data['Password'].encode('utf-8'), bcrypt.gensalt())
-  users_data['Password'] = hashed_password
   hashed_password1 = bcrypt.hashpw(users_data['Confirm_password'].encode('utf-8'), bcrypt.gensalt())
-  users_data['Confirm_password'] = hashed_password1
+  users_data['Password'], users_data['Confirm_password'] = hashed_password, hashed_password1
   users_data['Permissions'] = global_config.PERMISSIONS
   dac.insert_one(users_data)
   return  jsonify({'message' : 'Congratulations! User registered successfully. You can now proceed to the login.'}), 200
@@ -97,9 +94,9 @@ def user_login():
     Email = users_data['Email']
     Password = users_data['Password']
 
-    user = dac.find_one({"Email": Email})
+    user = find_user_by_email(dac, users_data['Email'])
     if user and bcrypt.checkpw(Password.encode('utf-8'), user['Password']):
-     token = jwt.encode({'Email': Email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, current_app.config['SECRET_KEY'], algorithm='HS256')
+     token = jwt.encode({'Email': Email, 'exp': datetime.utcnow() + timedelta(minutes=30)}, current_app.config['SECRET_KEY'], algorithm='HS256')
      user['token'] = token 
      dac.update_one({"Email": Email}, {"$set": {"token": token}})
      flask.session.update({"token":token})
@@ -144,9 +141,7 @@ def password_reset_request(user_details):
     
   
     Email=user_details['Email']
-
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-        
     dac.update_one({'Email': Email}, {'$set': {'reset_token': token}})
     return jsonify({'message': 'Password reset token has been sent to your email'})
     
@@ -169,12 +164,11 @@ def password_reset(user_details):
     token = request.json['token']
     new_password = request.json['new_password']
     user = dac.find_one({'Email': Email, 'reset_token': token})
-    if user:
-        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-        # Update the user's password in the database with the hashed password
-        dac.update_one({'Email': Email}, {'$set': {'Password': hashed_new_password}, '$unset': {'reset_token': 1}})
-        return jsonify({'message': 'Password has been reset successfully'})
-    return jsonify({'error': 'Invalid token'})
+    if user:  
+         hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+         dac.update_one({'Email': Email}, {'$set': {'Password': hashed_new_password}, '$unset': {'reset_token': 1}})
+         return {'message': 'Password has been reset successfully'}
+    return {'error': 'Invalid token'}
       
 
 
@@ -200,8 +194,10 @@ def edit_user_profile(user_details):
     print("new_contact:", new_contact)
     if not new_contact.isdigit() or len(new_contact) != 10:
       return jsonify ({'message' : "Invalid contact number format. Please enter a 10-digit number."}), 400
-    result = dac.update_one({'Email': Email}, {'$set': {'Contact_no': new_contact}}) 
-    if result.modified_count > 0:
+    update_fields = {
+    'Contact_no': new_contact}
+    result_count = update_user_fields(dac, Email, update_fields)
+    if result_count > 0:
         return {"message":"User profile updated successfully"}
     return {"message":"User not found"},400
     
