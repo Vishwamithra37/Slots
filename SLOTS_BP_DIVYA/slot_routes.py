@@ -10,6 +10,8 @@ import global_config
 from bson.json_util import dumps
 import jwt
 from bson import ObjectId
+from SLOTS_BP_DIVYA import dbops
+from SLOTS_BP_DIVYA import mydecorators
 
 # MongoDB connection
 client = pymongo.MongoClient("mongodb://localhost:27017/")  # Assuming MongoDB is running locally
@@ -20,10 +22,11 @@ RESOURCE_DETAILS_COLLECTION= db[global_config.COLLECTION_RESOURCE_DETAILS]
 
 
 # Define Flask Blueprint for slot operations
-slots_bp = Blueprint('slots', __name__)
+slots_bp = Blueprint('slots',__name__)
 
 @slots_bp.route('/v1/book_slot', methods=['POST'])
 @login_required
+@mydecorators.resource_subresource_verification
 def book_slot(data):
     """This route is used to book a slot by the required information provided by the user
 
@@ -31,33 +34,27 @@ def book_slot(data):
         data (dict):  Contains all the necessary information about the user who wants to book a slot
 
     Returns:
-        _type_: string--contains the message showing that weather the booking operation was succesful or not.  
+        type: string--contains the message showing that weather the booking operation was succesful or not.  
         If successful then it returns the Slot booked successfully else Not enough seats available for booking.
     """
     booking_data = request.get_json()
-    title_name= booking_data["title_name"],
-    resource_name = booking_data["resource_name"]
+    ResourceID = booking_data["admin_id"]
+    SubResourceID = booking_data["SubResourceID"]
+    SlotUniqueID = booking_data["slot_id"]
+    #title_name= booking_data["title_name"],
+    #resource_name = booking_data["resource_name"]
     date = booking_data["date"]
     time = booking_data["time"]
     seats = booking_data["seats"]
-
-    #to find the slot from the resource collection
-    slot = RESOURCE_DETAILS_COLLECTION.find_one({
-        'name': resource_name
-    
-    })
-    print(slot)
-    if not slot:
-        return jsonify({'error': 'Slot not found or unavailable at the specified time'}), 400
     
     # Create and save the booking
 
     booking_data = {
-        "title_name": title_name,
-        "resource_name": resource_name,
+        #"title_name": title_name,
+        #"resource_name": resource_name,
         "date": date,
         "time": time,
-        "seats": seats
+        #"seats": seats
     }
     if booking_data["date"] < slot["start_date"] or booking_data["date"] > slot["end_date"]:
      return "Date is outside the slot's valid range"
@@ -80,7 +77,7 @@ def booking_history(user_details):
         user_details (dict):  A dictionary containing details about a logged in user
 
     Returns:
-        _type_: string -- returns a message stating user booking history which  includes all their bookings
+        type: string -- returns a message stating user booking history which  includes all their bookings
     """
     Email = user_details['Email']
     booking_history = bookings_collection.find({"user_id": user_details["_id"]})
@@ -99,7 +96,7 @@ def cancel_booking(user_details,_id):
         _id (string): it is the object_Id when booking is created
 
     Returns:
-        _type_:  string -- It returns a message stating whether cancellation was successful or not
+        type:  string -- It returns a message stating whether cancellation was successful or not
     """
     # Check if the booking exists
 
