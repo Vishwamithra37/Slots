@@ -14,7 +14,7 @@ from bson.binary import Binary
 import base64
 import global_config
 from decorators import login_required
-from .dbops import find_user_by_email,update_user_fields
+from .dbops import find_user_by_email,update_user_fields,find_token_by_email
 from USER_BP_NAVYA.input_validations import validate_fullname
 
 
@@ -94,18 +94,18 @@ def user_login():
     Email = users_data['Email']
     Password = users_data['Password']
 
-    user = find_user_by_email(dac, users_data['Email'])
+    user = dac.find_one({"Email": Email})
     if user and bcrypt.checkpw(Password.encode('utf-8'), user['Password']):
      token = jwt.encode({'Email': Email, 'exp': datetime.utcnow() + timedelta(minutes=30)}, current_app.config['SECRET_KEY'], algorithm='HS256')
      user['token'] = token 
      dac.update_one({"Email": Email}, {"$set": {"token": token}})
      flask.session.update({"token":token})
-     #session['token'] = token
+
 
      welcome_message = f"Welcome to the Slotzz, {user['Fullname']}! You are now logged in. What would you like to do today?\n1. View Available Slots\n2. Book a Slot\n3. Cancel a Booking\n4. My Bookings\n5. Logout\n\nPlease enter the corresponding number for your desired action."
-     return jsonify({'message': welcome_message, 'token': token})
+     return {'message': welcome_message, 'token': token}
     else:
-     return jsonify({'message': 'Invalid username or password'}), 401
+     return {'message': 'Invalid username or password'}, 401
 
   
 @users_bp.route('/v1/user_logout', methods=['POST'])
@@ -163,11 +163,14 @@ def password_reset(user_details):
     Email = user_details['Email']
     token = request.json['token']
     new_password = request.json['new_password']
-    user = dac.find_one({'Email': Email, 'reset_token': token})
-    if user:  
-         hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-         dac.update_one({'Email': Email}, {'$set': {'Password': hashed_new_password}, '$unset': {'reset_token': 1}})
-         return {'message': 'Password has been reset successfully'}
+    reset_token = find_token_by_email(dac,token)
+    print(token)
+    if reset_token:  
+      hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    update_fields = {'Password':'hashed_new_password','reset_token': 1}
+    result_count = update_user_fields(dac, Email, update_fields)
+    if result_count > 0:
+       return {'message': 'Password has been reset successfully'}
     return {'error': 'Invalid token'}
       
 

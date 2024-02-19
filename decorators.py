@@ -77,5 +77,3 @@ def admin_collection_verification(admin_id,user_email):
         return admin_details["Permissions"]
 
     return False
-
-
