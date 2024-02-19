@@ -18,6 +18,12 @@ def update_user_fields(collection, email, updated_fields):
     result = collection.update_one({'Email': email}, update_query)
     return result.modified_count if result else 0 
 
+def find_token_by_email(collection, email):
+    """This function finds the reset token by user's email in the Account_holders collection"""
+    user_details = collection.find_one({"Email": email})
+    return user_details.get('reset_token') if user_details else None
+
+
 
 
 
