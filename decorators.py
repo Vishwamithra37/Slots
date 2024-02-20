@@ -29,7 +29,7 @@ def login_required(route_function):
                 print("decorator is working")
                 return route_function(user_details=user,*args, **kwargs)
             else:
-                return jsonify({"status": "error", "message": "Insufficient permissions"}), 403
+                return jsonify({"status": "error", "message": "Insufficient permission"}), 403
         else:
             return jsonify({"status": "error", "message": "Invalid token"}), 401
 
