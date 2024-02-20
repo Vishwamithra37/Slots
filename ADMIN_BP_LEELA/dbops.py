@@ -12,10 +12,10 @@ import uuid
 
 
 class Resource1:
-    def __init__(self, resource_name=None, description=None, admin_id=None,resource_tags=None,creator_email=None):
+    def __init__(self, resource_name=None, description=None, resource_unique_id=None,resource_tags=None,creator_email=None):
         self.resource_name = resource_name
         self.description = description
-        self.admin_id = admin_id
+        self.resource_unique_id = resource_unique_id
         self.resource_tags = resource_tags
         self.creator_email = creator_email
 
@@ -33,54 +33,44 @@ class Resource1:
             return False
         return True
     
-    def validate_unique_admin_id(self, admin_id):
-        existing_admin_id= resource_collection.find_one({"admin_id": admin_id})
-        if existing_admin_id:
-            return False
-        if len(admin_id) < 5:
-            return False
-        else:
-            return True
+    def validate_unique_admin_id(self, resource_unique_id): 
        
+        if resource_unique_id is None:
+            return False
+        if len(resource_unique_id) == 6:
+            return False
+        existing_resource = resource_collection.find_one({"resource_unique_id": resource_unique_id})
+        if existing_resource :
+            return False
+        
+        if not bool(re.match("^[a-zA-Z0-9]+$", resource_unique_id)):
+           return "Invalid admin ID format"
+        else:
+            return True  
+    
 
-
-    def validate_unique_name_for_admin(self, resource_name, admin_id):
-        existing_resource = resource_collection.find_one({"resource_name": resource_name, "admin_id": admin_id})
-        if existing_resource:
-            return False  
-        return True  
-    def add_tag(self, resource_tags):
-        self.resource_tags.append(resource_tags)
-
-    def remove_tag(self, resource_tags):
-        if resource_tags in self.resource_tags:
-            self.resource_tags.remove(resource_tags)
+   
 
 
     def validate_resource_tags(self, resource_tags):
-        # Checking for empty tags field
+       
         if resource_tags is None:
             return False
-        # Checking for invalid tags
-        if len(resource_tags) < 3:
+     
+        if len(resource_tags) < 1:
             return False
         return True
 
 
-    def validate_creators_mail(self,creator_email):
-        if creator_email is None:
-            return False
-        if len(creator_email) < 3:
-            return False
-        return True
-        
+    
         
 
 class Resource2:
-    def __init__(self, sub_resource_name=None, sub_description=None, sub_resource_id=None):
+    def __init__(self, sub_resource_name=None, sub_description=None, sub_resource_id=None,resource_unique_id=None):
         self.sub_resource_name = sub_resource_name
         self.sub_description = sub_description
         self.sub_resource_id = sub_resource_id
+        self.resource_unique_id =resource_unique_id
       
     def validate_sub_resource_name(self, sub_resource_name):
             if sub_resource_name is None:
@@ -91,11 +81,31 @@ class Resource2:
     
         
     def validate_sub_resource_id(self,sub_resource_id):
-        if sub_resource_id is None:
+       if sub_resource_id is None:
+           return False
+       if len(sub_resource_id)!= 6:
+           return False
+       
+       exisisting = sub_resource_collection.find_one({"sub_resource_id":sub_resource_id})
+       if exisisting :
             return False
-        if len(sub_resource_id) < 3:
-            return False
-        return True
+        
+       if not bool(re.match("^[a-zA-Z0-9]+$", sub_resource_id)):
+           return "Invalid admin ID format"
+       else:
+            return True  
+
+      
+    def validate_resource_id(self,resource_unique_id):
+        res=resource_collection.find_one({"resource_id":resource_unique_id})
+        if res is None:
+          return "This resource does not exist."
+        else:
+          return "The resource you are looking for exists."
+       
+
+       
+        
     def validate_sub_description(self, sub_description):
         if sub_description is None:
             return False
@@ -106,13 +116,13 @@ class Resource2:
 
 
 class Resource3:
-    def _init_(self, Slot_name=None,
+    def __init__(self, Slot_name=None,
                Slot_description=None, 
                Status=None,StartTime=None,
                EndTime=None,MaxAdvanceDays=None,
                MaxBookings=None,Daysofweek=None,
-               Resource_UniqueID=None,
-               SubResource_UniqueID=None,UniqueID=None):
+               resource_unique_id=None,
+               sub_resource_id=None,slot_unique_id=None):
         self.Slot_name=Slot_name
         self.Slot_description=Slot_description
         self.Status=Status
@@ -121,9 +131,9 @@ class Resource3:
         self.MaxAdvanceDays=MaxAdvanceDays
         self.MaxBookings=MaxBookings
         self.Daysofweek=Daysofweek
-        self.Resource_UniqueID=Resource_UniqueID
-        self.SubResource_UniqueID=SubResource_UniqueID
-        self.UniqueID=UniqueID
+        self.resource_unique_id=resource_unique_id
+        self.sub_resource_id= sub_resource_id
+        self.slot_unique_id=slot_unique_id
 
 
 
@@ -175,18 +185,39 @@ class Resource3:
         if len(Days_of_week) < 1:
             return False
         return True
-    def validate_resource_unique_id(self, Resource_UniqueID):
-        if Resource_UniqueID is None:
+    def validate_resource_id(self,resource_unique_id):
+        res=resource_collection.find_one({"resource_id":resource_unique_id})
+        if res is None:
+          return "This resource does not exist."
+        else:
+          return "The resource you are looking for exists."
+       
+    
+    def validate_sub_resource_unique_id(self, sub_resource_id):
+        res=sub_resource_collection.find_one({"sub_resource_id":sub_resource_id})
+        if res is None:
+            return "This sub-resource does not exist."
+        else:
+            return "The sub-resource you are looking for exists."
+
+       
+    
+        
+    def validate_unique_slot_id(self, unique_slot_id): 
+       
+        if unique_slot_id is None:
             return False
-        if len(Resource_UniqueID) < 3:
+        if len(unique_slot_id)!= 6:
             return False
-        return True
-    def validate_sub_resource_unique_id(self, Sub_Resource_UniqueID):
-        if Sub_Resource_UniqueID is None:
+        existing_resource = resource_collection.find_one({"unique_slot_id": unique_slot_id})
+        if existing_resource and len(existing_resource) == 6:
             return False
-        if len(Sub_Resource_UniqueID) < 3:
-            return False
-        return True
+        
+        if not bool(re.match("^[a-zA-Z0-9]+$", unique_slot_id)):
+           return "Invalid admin ID format"
+        else:
+            return True  
+       
     
     
 
