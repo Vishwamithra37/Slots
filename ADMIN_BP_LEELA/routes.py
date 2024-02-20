@@ -1,54 +1,108 @@
 from flask import Blueprint, Flask, request, jsonify
-from .config import collection as dac
+from .config import resource_collection,sub_resource_collection,slot_collection,admin_collection
 from .config import admin_collection
-from .dbops import Resource  
+from .dbops import Resource1,Resource2,Resource3
 from decorators import admin_login_required,login_required
 from . import fun
+from global_config import COLLECTION_ADMIN_DETAILS,COLLECTION_RESOURCE_DETAILS as crd,COLLECTION_SLOT_DETAILS,COLLECTION_SUBRESOURCE_DETAILS
 
 admin_page = Blueprint('admin', __name__)
 
-@admin_page.route('/admin/resource', methods=['POST'])
+@admin_page.route('/admin/create_resource', methods=['POST'])
 @login_required
 def create_resource(user_details):
-    resource_data = request.get_json()
-    resource_obj = Resource(name=resource_data["name"], 
-                            description=resource_data["description"],
-                            slot_duration=resource_data["slot_duration"],
-                            total_slots=resource_data["total_slots"],
-                            start_date=resource_data["start_date"],
-                            end_date=resource_data["end_date"], 
-                            slot_open_time=resource_data["slot_open_time"], 
-                            slot_close_time=resource_data["slot_close_time"],
-                            max_bookings_per_slot=resource_data["max_bookings_per_slot"], 
-                            admin_id=resource_data["admin_id"])
-    
+    resource_data1 = request.get_json()
+    resource_obj1 = Resource1(resource_name=resource_data1["resource_name"],
+                            description=resource_data1["description"],
+                            admin_id=resource_data1["admin_id"],
+                            resource_tags = [],
+                            creator_email= resource_data1["creator_email"])
 
-    try:
-        if not resource_obj.validate_name(resource_data["name"]):
-        
-            print(type(resource_obj))
-            raise ValueError("Invalid resource data:check the name and admin id")
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+    if resource_obj1.validate_resource_name(resource_data1["resource_name"]) == False:
+        return jsonify({"Message":"Resource name should be atleast 3 characters"}),400
+    if resource_obj1.validate_description(resource_data1["description"]) == False:
+        return jsonify({"Message": "Description should contain at least 5 words and not more than 100 words"}),400
+    if resource_obj1.validate_unique_admin_id(resource_data1["admin_id"]) == False:
+         return jsonify({"Error": "Admin already has a resource with this Admin ID."}),400
     
+    if resource_obj1.validate_unique_name_for_admin(resource_data1["resource_name"],resource_data1["admin_id"]) == False:
+        return jsonify({"Message":"Resource name already exists"}),400
+    if resource_obj1.validate_resource_tags(resource_data1["resource_tags"])==False:
+        return jsonify({"Message":"Invalid tags"}),400
+       
+    
+    if resource_obj1.validate_creators_mail(resource_data1["creator_email"]) == False:
+        return jsonify({"Message":"Invalid Email"}),400
+    else:
+        result=resource_collection.insert_one(resource_obj1.__dict__)
+        return jsonify({"Message":"Successfully created Resource"}),201
 
-    existing = dac.find_one({'admin_id': resource_data['admin_id']})
-    if existing:
-       return jsonify({'error': 'ID already exists'}), 400
-    
-    existing = dac.find_one({'name': resource_data['name']})
-    if existing:
-        return jsonify({'error': 'Name already exists'}), 400
-    
-    result=dac.insert_one(resource_data)
-    if result.acknowledged:
-       r1= fun.create_admin_details(user_details["Email"],resource_data["admin_id"])
-       admin_collection.insert_one(r1)   
-    return jsonify({"message": "Resource created successfully"}), 201
+
+@admin_page.route("/sub_resource", methods=['POST'])
+
+def create_sub_resource():
+    resource_data2 = request.get_json()
+    resource_obj2 = Resource2(sub_resource_name=resource_data2["sub_resource_name"],
+                              sub_description=resource_data2["sub_description"],
+                              sub_resource_id=resource_data2["sub_resource_id"])
+
+    if resource_obj2.validate_sub_resource_name(resource_data2["sub_resource_name"]) == False:
+        return jsonify({"Message": "Sub-Resource name should be atleast 3 characters"}), 400
+    if resource_obj2.validate_sub_description(resource_data2["sub_description"]) == False:
+        return jsonify({"Message": "Description should contain at least 5 words and not more than 100 words"}), 400
+    if resource_obj2.validate_sub_resource_id(resource_data2["sub_resource_id"]) == False:
+        return jsonify({"Error": "Sub-Resource ID already exists"}), 400
+
+    result = sub_resource_collection.insert_one(resource_obj2.__dict__)
+    return jsonify({"Message": "Successfully created Sub-Resource"}), 201
+
+@admin_page.route("/create_slot", methods=["post"]) 
+def create_slot():
+    slot_data = request.get_json()
+    print("Slot data is ",slot_data)
+    slot_obj = Resource3(slot_name=slot_data["Slot_name"],
+                        slot_description=slot_data["Slot_description"],
+                        Status = slot_data["Status"],
+                        StartTime = slot_data["StartTime"],
+                        EndTime = slot_data["EndTime"],
+                        MaxAdvanceDays = slot_data["MaxAdvanceDays"],
+                        MaxBookings = slot_data["MaxBookings"],
+                        Daysofweek = slot_data["Daysofweek"],
+                        Resource_UniqueID = slot_data["Resource_UniqueID"],
+                        SubResource_UniqueID = slot_data["SubResource_UniqueID"],
+                        UniqueID = slot_data["UniqueID"]
+                        )
+    print("Slot obj is ",slot_obj)
+    if slot_obj.validate_slot_name(slot_data["slot_name"]) == False:
+        return jsonify({"Message": "Please enter a valid Slot Name."}), 
+    if slot_obj.validate_slot_description(slot_data["slot_description"]) == False:
+        return jsonify({"Message": "Please enter a valid Slot Description."}),
+    if slot_obj.validate_status(slot_data["status"]) == False:
+        return jsonify({"Message": "Please enter a valid Status."}),
+    if slot_obj.validate_start_time(slot_data["startTime"]) == False:
+        return jsonify({"Message": "Please enter a valid Start Time."}),
+    if slot_obj.validate_end_time(slot_data["endTime"]) == False:
+        return jsonify({"Message": "Please enter a valid End Time."}),
+    if slot_obj.validate_max_advance_days(slot_data["maxAdvanceDays"]) == False:
+        return jsonify({"Message": "Please enter a valid Max Advance Days."}),
+    if slot_obj.validate_max_bookings(slot_data["maxBookings"]) == False:
+        return jsonify({"Message": "Please enter a valid Max Bookings."}),
+    if slot_obj.validate_days_of_week(slot_data["daysofweek"]) == False:
+        return jsonify({"Message": "Please enter a valid Days of Week."}),
+    if slot_obj.validate_resource_unique_id(slot_data["resource_uniqueID"]) == False:
+        return jsonify({"Message": "Please enter a valid Resource Unique ID."}),
+    if slot_obj.validate_sub_resource_unique_id(slot_data["subResource_uniqueID"]) == False:
+        return jsonify({"Message": "Please enter a valid Sub Resource Unique ID."}),
+
+
+    result = slot_collection.insert_one(slot_obj.__dict__)
+    return jsonify({"Message": "Successfully created Slot"}), 201
+
+
 
 @admin_page.route('/admin/resources', methods=['GET'])
 def get_all_resources():
-    resources = [doc for doc in dac.find()]
+    resources = [doc for doc in resource_collection.find()]
     for doc in resources:
         doc["_id"] = str(doc["_id"])
     return jsonify(resources)
@@ -89,9 +143,9 @@ def update_by_admin_id(admin_id):
     
     r1 = admin_collection.find_one({"Email": Email})
     if r1:
-        r2=dac.find_one({"admin_id":admin_id})
+        r2=resource_collection.find_one({"admin_id":admin_id})
         if r2:
-            r3=dac.find_one_and_update({"admin_id":admin_id},{"$set":resource_data})
+            r3=resource_collection.find_one_and_update({"admin_id":admin_id},{"$set":resource_data})
             if r3:
                 return jsonify({"message": "Resource updated successfully"}), 201
             else:

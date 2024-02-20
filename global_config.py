@@ -1,4 +1,6 @@
 ADMIN_PERMISSIONS =["create_resource",
+                    "create_sub_resource",
+                    "create_reso"
                     "booking_resource",
                     "delete_slot",
                     "update_by_admin_id"
@@ -15,6 +17,8 @@ PERMISSIONS = ['view_slots',
                 "edit_user_profile",
                 "view_profile",
                 "create_resource",
+                "create_sub_resource",
+                "create_slot",
                 "get_all_resources"] +ADMIN_PERMISSIONS
 
 

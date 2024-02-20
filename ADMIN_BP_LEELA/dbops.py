@@ -1,6 +1,6 @@
 import datetime
 import re
-from.config import collection as dac
+from.config import resource_collection ,sub_resource_collection,admin_collection
 import uuid
 
  
@@ -10,117 +10,189 @@ import uuid
 
 
 
-class Resource:
-    def __init__(self, name, description, slot_duration, total_slots, start_date, end_date, slot_open_time, slot_close_time, max_bookings_per_slot,admin_id):
-        self.name = name
-        self.description = description
-        self.slot_duration = slot_duration
-        self.total_slots = total_slots
-        self.start_date = start_date
-        self.end_date = end_date
-        self.slot_open_time = slot_open_time
-        self.slot_close_time = slot_close_time
-        self.max_bookings_per_slot = max_bookings_per_slot
-        if admin_id is None:
-            self.admin_id = str(uuid.uuid4())  
-        else:
-            self.admin_id = admin_id
 
 class Resource1:
-    def __init__(self, name=None, description=None, admin_id=None):
-        self.name = name
+    def __init__(self, resource_name=None, description=None, admin_id=None,resource_tags=None,creator_email=None):
+        self.resource_name = resource_name
         self.description = description
         self.admin_id = admin_id
+        self.resource_tags = resource_tags
+        self.creator_email = creator_email
 
-    def validate_name(self, name):
-            if name is None:
+    def validate_resource_name(self, resource_name):
+            if resource_name is None:
                return False
-            if len(name) < 3:
+            if len(resource_name) < 3:
                return False
             return True
-
-class Resource2:
-    def __init__(self, slot_duration, total_slots, start_date, end_date, slot_open_time, slot_close_time, max_bookings_per_slot, admin_id):
-        self.slot_duration = slot_duration
-        self.total_slots = total_slots
-        self.start_date = start_date
-        self.end_date = end_date
-        self.slot_open_time = slot_open_time
-        self.slot_close_time = slot_close_time
-        self.max_bookings_per_slot = max_bookings_per_slot
-        self.admin_id = admin_id
-     
     
-    def validate_unique_name_for_admin(self, name, admin_id):
-        existing_resource = dac.find_one({"name": name, "admin_id": admin_id})
-        if existing_resource:
-            return False  
-        return True  
-    
-    def validate_admin_id(self,admin_id):
-        if admin_id is None:
-            return False
-        if len(admin_id) < 3:
-            return False
-        return True
     def validate_description(self, description):
         if description is None:
             return False
-        if len(description) < 3:
+        if len(description) < 5 and len(description) > 100:
+            return False
+        return True
+    
+    def validate_unique_admin_id(self, admin_id):
+        existing_admin_id= resource_collection.find_one({"admin_id": admin_id})
+        if existing_admin_id:
+            return False
+        if len(admin_id) < 5:
+            return False
+        else:
+            return True
+       
+
+
+    def validate_unique_name_for_admin(self, resource_name, admin_id):
+        existing_resource = resource_collection.find_one({"resource_name": resource_name, "admin_id": admin_id})
+        if existing_resource:
+            return False  
+        return True  
+    def add_tag(self, resource_tags):
+        self.resource_tags.append(resource_tags)
+
+    def remove_tag(self, resource_tags):
+        if resource_tags in self.resource_tags:
+            self.resource_tags.remove(resource_tags)
+
+
+    def validate_resource_tags(self, resource_tags):
+        # Checking for empty tags field
+        if resource_tags is None:
+            return False
+        # Checking for invalid tags
+        if len(resource_tags) < 3:
             return False
         return True
 
-    def validate_slot_duration(self, slot_duration):
-        if slot_duration is None:
+
+    def validate_creators_mail(self,creator_email):
+        if creator_email is None:
             return False
-        if slot_duration < 1:
+        if len(creator_email) < 3:
             return False
         return True
-       
+        
+        
+
+class Resource2:
+    def __init__(self, sub_resource_name=None, sub_description=None, sub_resource_id=None):
+        self.sub_resource_name = sub_resource_name
+        self.sub_description = sub_description
+        self.sub_resource_id = sub_resource_id
+      
+    def validate_sub_resource_name(self, sub_resource_name):
+            if sub_resource_name is None:
+               return False
+            if len(sub_resource_name) < 3:
+               return False
+            return True
+    
+        
+    def validate_sub_resource_id(self,sub_resource_id):
+        if sub_resource_id is None:
+            return False
+        if len(sub_resource_id) < 3:
+            return False
+        return True
+    def validate_sub_description(self, sub_description):
+        if sub_description is None:
+            return False
+        if len(sub_description) < 5 and len(sub_description) > 100:
+            return False
+        return True
     
 
-    def validate_total_slots(self, total_slots):
-        if total_slots is None:
+
+class Resource3:
+    def _init_(self, Slot_name=None,
+               Slot_description=None, 
+               Status=None,StartTime=None,
+               EndTime=None,MaxAdvanceDays=None,
+               MaxBookings=None,Daysofweek=None,
+               Resource_UniqueID=None,
+               SubResource_UniqueID=None,UniqueID=None):
+        self.Slot_name=Slot_name
+        self.Slot_description=Slot_description
+        self.Status=Status
+        self.StartTime=StartTime
+        self.EndTime=EndTime
+        self.MaxAdvanceDays=MaxAdvanceDays
+        self.MaxBookings=MaxBookings
+        self.Daysofweek=Daysofweek
+        self.Resource_UniqueID=Resource_UniqueID
+        self.SubResource_UniqueID=SubResource_UniqueID
+        self.UniqueID=UniqueID
+
+
+
+    def validate_slot_name(self, slot_name):
+        if slot_name is None:
             return False
-        if total_slots < 1:
+        if len(slot_name) < 3:
             return False
         return True
-
-    def validate_start_date(self, start_date):
-        if start_date is None:
+    def validate_slot_description(self, slot_description):
+        if slot_description is None:
             return False
-        if not self.validate_date(start_date):
-            return False
-        return True
-
-    def validate_end_date(self, end_date):
-        if end_date is None:
-            return False
-        if not self.validate_date(end_date):
+        if len(slot_description) < 5 and len(slot_description) > 100:
             return False
         return True
-
-    def validate_slot_open_time(self, slot_open_time):
-        if slot_open_time is None:
+    def validate_status(self, Status):
+        if Status is None:
             return False
-        if not self.validate_time(slot_open_time):
-            return False
-        return True
-
-    def validate_slot_close_time(self, slot_close_time):
-        if slot_close_time is None:
-            return False
-        if not self.validate_time(slot_close_time):
+        if len(Status) < 3:
             return False
         return True
-
-    def validate_max_bookings_per_slot(self, max_bookings_per_slot):
-        if max_bookings_per_slot is None:
+    def validate_start_time(self, Start_time):
+        if Start_time is None:
             return False
-        if max_bookings_per_slot < 1:
+        if not self.validate_time(Start_time):
             return False
         return True
+    def validate_end_time(self, End_time):
+        if End_time is None:
+            return False
+        if not self.validate_time(End_time):
+            return False
+        return True
+    def validate_max_advance_days(self, Max_advance_days):
+        if Max_advance_days is None:
+            return False
+        if Max_advance_days < 1:
+            return False
+        return True
+    def validate_max_bookings(self, Max_bookings):
+        if Max_bookings is None:
+            return False
+        if Max_bookings < 1:
+            return False
+        return True
+    def validate_days_of_week(self, Days_of_week):
+        if Days_of_week is None:
+            return False
+        if len(Days_of_week) < 1:
+            return False
+        return True
+    def validate_resource_unique_id(self, Resource_UniqueID):
+        if Resource_UniqueID is None:
+            return False
+        if len(Resource_UniqueID) < 3:
+            return False
+        return True
+    def validate_sub_resource_unique_id(self, Sub_Resource_UniqueID):
+        if Sub_Resource_UniqueID is None:
+            return False
+        if len(Sub_Resource_UniqueID) < 3:
+            return False
+        return True
+    
+    
 
+   
+
+    
     def validate_date(self, date_str):
         try:
             datetime.datetime.strptime(date_str, '%Y-%m-%d')
@@ -136,19 +208,6 @@ class Resource2:
     
     
    
-    def validate(self):
-        return (
-            self.validate_name(self.name) and
-            self.validate_unique_name_for_admin(self.name, self.admin_id)and
-            self.validate_description(self.description) and
-            self.validate_slot_duration(self.slot_duration) and
-            self.validate_total_slots(self.total_slots) and
-            self.validate_start_date(self.start_date) and
-            self.validate_end_date(self.end_date) and
-            self.validate_slot_open_time(self.slot_open_time) and
-            self.validate_slot_close_time(self.slot_close_time) and
-            self.validate_max_bookings_per_slot(self.max_bookings_per_slot)
-        )
 def permissions_data():
     email = "test@example.com"
     return {
@@ -160,19 +219,6 @@ def permissions_data():
     }
 
 
-def to_dict(self):
-    return {
-        "name": self.name,
-        "description": self.description,
-        "slot_duration": self.slot_duration,
-        "total_slots": self.total_slots,
-        "start_date": self.start_date,
-        "end_date": self.end_date,
-        "slot_open_time": self.slot_open_time,
-        "slot_close_time": self.slot_close_time,
-        "max_bookings_per_slot": self.max_bookings_per_slot,
-        "admin_id": self.admin_id
-    }
 
 
 
