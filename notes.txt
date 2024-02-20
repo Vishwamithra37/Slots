@@ -3,3 +3,15 @@ create resource
 create sub resource 
 create slot
 
+20/02/2024
+in create resource add the resource unique id with permissions   //check routes  completed 
+link the creator email id from the user table to create resource  //completed 
+validate the sub resource id  //completed
+validate the slot unique id  //copleted
+
+change the admin id to resource unique id in dec //completed
+
+
+
+
+

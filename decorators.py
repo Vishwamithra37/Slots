@@ -51,13 +51,13 @@ def admin_login_required(route_function):
     @wraps(route_function)
     def decorated_function(*args, **kwargs):
         
-         admin_id = flask.request.get_json()["admin_id"]
+         resource_unique_id = flask.request.get_json()["resource_unique_id"]
          user_email=kwargs["user_details"]["Email"]
         
          Permission_name=route_function.__name__
          print("this is from admin login_required")
          print(Permission_name)
-         admin_permissions=admin_collection_verification(admin_id,user_email)
+         admin_permissions=admin_collection_verification(resource_unique_id,user_email)
          if admin_permissions:
              if Permission_name in admin_permissions:
                  print(" admin login decorator is working")
@@ -71,8 +71,8 @@ def admin_login_required(route_function):
 
     return decorated_function
 
-def admin_collection_verification(admin_id,user_email):
-    admin_details = admin_collection.find_one({"email": user_email,"admin_id":admin_id})
+def admin_collection_verification(resource_unique_id,user_email):
+    admin_details = admin_collection.find_one({"email": user_email,"admin_id":resource_unique_id})
     if admin_details:
         return admin_details["Permissions"]
 
